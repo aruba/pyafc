@@ -167,7 +167,7 @@ class Policy:
             exceptions.NetworkNotFound,
         ) as exc:
             _message = (f"An exception {exc} occurred while creating "
-                        "policy {self.name}")
+                        f"policy {self.name}")
 
         return _message, _status, _changed
 
@@ -205,6 +205,6 @@ class Policy:
             exceptions.NetworkNotFound,
         ) as exc:
             _message = (f"An exception {exc} occurred while "
-                        "deleting policy {self.name}")
+                        f"deleting policy {self.name}")
 
         return _message, _status, _changed

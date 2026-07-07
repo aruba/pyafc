@@ -192,7 +192,7 @@ class Rule:
             exceptions.ApplicationUnknown,
         ) as exc:
             _message = (f"An exception {exc} occurred while "
-                        "attempting to create rule {self.name}")
+                        f"attempting to create rule {self.name}")
 
         return _message, _status, _changed
 
@@ -230,6 +230,6 @@ class Rule:
             exceptions.ApplicationUnknown,
         ) as exc:
             _message = (f"An exception {exc} occurred while "
-                        "attempting to create rule {self.name}")
+                        f"attempting to delete rule {self.name}")
 
         return _message, _status, _changed

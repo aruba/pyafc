@@ -189,7 +189,7 @@ class EndpointGroup:
             exceptions.VMKNotFound,
         ) as exc:
             _message = (f"An exception occurred {exc} while "
-                        "creating endpoint group {self.name}")
+                        f"creating endpoint group {self.name}")
 
         return _message, _status, _changed
 
@@ -231,6 +231,6 @@ class EndpointGroup:
             exceptions.VMKNotFound,
         ) as exc:
             _message = (f"An exception occurred {exc} "
-                        "while deleting endpoint group {self.name}")
+                        f"while deleting endpoint group {self.name}")
 
         return _message, _status, _changed

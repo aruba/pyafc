@@ -171,6 +171,6 @@ class ASPathList:
 
         except Exception as exc:
             _message = (f"An exception {exc} occurred while deleting "
-                        "ASPath {self.name}")
+                        f"ASPath {self.name}")
 
         return _message, _status, _changed
