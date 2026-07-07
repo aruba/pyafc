@@ -1,3 +1,50 @@
+# Unreleased
+
+### ⚠️ Breaking Changes
+
+#### TLS certificate verification is now enabled by default
+Previously `pyafc` connected to AFC with TLS certificate verification
+**disabled** (`verify=False` was hard-coded in both the synchronous and
+asynchronous HTTP clients). It now verifies the AFC certificate by default.
+
+- **Who is affected:** any code that connects to an AFC presenting a
+  self-signed or otherwise untrusted certificate (common in labs and on
+  appliances using the factory certificate).
+- **Symptom after upgrade:** the connection fails with a TLS certificate
+  verification error instead of succeeding silently.
+- **How to keep the previous behaviour:** pass `verify: False` in the data
+  dictionary. Only do this for trusted/lab environments.
+
+  ```python
+  from pyafc.afc import afc
+
+  afc_instance = afc.Afc(data={
+      "ip": "10.10.10.10",
+      "username": "admin",
+      "password": "password",
+      "verify": False,  # self-signed / lab certificate only
+  })
+  ```
+
+  The recommended long-term fix is to install a trusted certificate on AFC
+  so that verification can stay enabled.
+
+### Security Fixes
+- Made TLS certificate verification configurable via the `verify` key with a
+  secure default of `True`.
+- Replaced `sys.exit()` in the connection decorator with a proper
+  `AuthenticationIssue` exception.
+
+### Bug Fixes
+- `switches`: fixed the IP/UUID lookup logic (`get_switch_uuid`,
+  `consolidate_ip`) and the attribute-instantiation status check.
+- `vrf`: fixed attribute population, a malformed `get_ip_interface` URI and a
+  missing f-string in a log message.
+- `common`: repaired `extract_data` and the `afc_connected` decorator.
+- Added missing f-string prefixes in several error messages.
+
+---
+
 # v1.0.0
 
 ### Overview
