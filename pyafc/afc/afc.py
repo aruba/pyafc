@@ -23,6 +23,8 @@ class Afc(backups.Backup, licenses.License):
             ip (str): AFC IP Address.
             username (str): AFC username
             password (str): AFC password
+            verify (bool, optional): Verify the TLS certificate of the AFC.
+                Defaults to True. Set to False for self-signed certificates.
 
         Example:
             afc_instance = afc.Afc(ip=10.10.10.10,
@@ -35,10 +37,11 @@ class Afc(backups.Backup, licenses.License):
         """
         self.afc_data = data
         self.connect_client = {}
+        self.verify = self.afc_data.get("verify", True)
         timeout = httpx.Timeout(20.0, read=60, connect=60.0)
         afc_url = f"https://{self.afc_data['ip']}/api/"
         self.client = httpx.Client(
-            verify=False, base_url=afc_url, timeout=timeout,
+            verify=self.verify, base_url=afc_url, timeout=timeout,
         )
         self.connect()
         if self.afc_connected:
@@ -116,7 +119,7 @@ class Afc(backups.Backup, licenses.License):
         timeout = httpx.Timeout(20.0, read=60, connect=60.0)
         afc_url = f"https://{self.afc_data['ip']}/api/"
         self.async_client = httpx.AsyncClient(
-            verify=False, base_url=afc_url, timeout=timeout,
+            verify=self.verify, base_url=afc_url, timeout=timeout,
         )
         if "username" in list(self.afc_data.keys()) and "password" in list(
             self.afc_data.keys()
