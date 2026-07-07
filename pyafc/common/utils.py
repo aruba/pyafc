@@ -62,12 +62,11 @@ def extract_data(file: str) -> dict | bool:
         This section is mostly used for direct SDK based execution
 
     """
-    if not file.endswith(".yml") or not file.endswith(".yaml"):
+    if not (file.endswith(".yml") or file.endswith(".yaml")):
         return False
 
-    with Path.open(file) as stream:
+    with Path(file).open() as stream:
         data = yaml.safe_load(stream)
-        stream.close()
     return data
 
 
