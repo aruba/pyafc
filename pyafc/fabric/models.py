@@ -1,7 +1,7 @@
 # (C) Copyright 2020-2025 Hewlett Packard Enterprise Development LP.
 # Apache License 2.0
 
-from typing import List, Literal
+from typing import Literal
 
 from pydantic import BaseModel, root_validator
 
@@ -21,7 +21,7 @@ class Fabric(BaseModel):
 class EVPN(BaseModel):
     fabric_uuid: str
     name_prefix: str = "NEW EVPN"
-    switch_uuids: List[str] = []
+    switch_uuids: list[str] = []
     description: str = ""
     as_number: str = None
     rt_type: Literal["AUTO", "ASN:VNI", "ASN:VLAN", "ASN:NN"] = "AUTO"
@@ -77,7 +77,7 @@ class EVPNSettings(BaseModel):
     local_svi: bool = False
     local_mac: bool = False
     vxlan_tunnel_bridging_mode: str = None
-    switch_uuids: List[str] = []
+    switch_uuids: list[str] = []
 
 
 class GlobalRT(BaseModel):
@@ -86,9 +86,9 @@ class GlobalRT(BaseModel):
 
 
 class VLANStretching(BaseModel):
-    fabric_uuids: List[str]
+    fabric_uuids: list[str]
     stretched_vlans: str
-    global_route_targets: List[GlobalRT]
+    global_route_targets: list[GlobalRT]
 
 
 class RemoteFabric(BaseModel):
@@ -102,7 +102,7 @@ class MultiFabrics(BaseModel):
     name: str
     description: str = ""
     border_leader: str
-    l3_ebgp_borders: List[str]
-    remote_fabrics: List[RemoteFabric]
+    l3_ebgp_borders: list[str]
+    remote_fabrics: list[RemoteFabric]
     bgp_auth_password: str = ""
     uplink_to_uplink: bool = None

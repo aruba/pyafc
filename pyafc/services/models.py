@@ -2,7 +2,7 @@
 # Apache License 2.0
 
 from ipaddress import IPv4Address, IPv6Address
-from typing import List, Literal
+from typing import Literal
 
 from pydantic import BaseModel, root_validator
 
@@ -40,9 +40,9 @@ class NtpEntry(BaseModel):
 class Ntp(BaseModel):
     name: str
     description: str = ""
-    fabric_uuids: List[str] = []
-    switch_uuids: List[str] = []
-    entry_list: List[NtpEntry]
+    fabric_uuids: list[str] = []
+    switch_uuids: list[str] = []
+    entry_list: list[NtpEntry]
 
     @root_validator(pre=True)
     def convert_servers(cls, values):
@@ -57,11 +57,11 @@ class Dns(BaseModel):
     name: str
     description: str = ""
     domain_name: str
-    name_servers: List[str] = []
-    domain_list: List[str] = []
+    name_servers: list[str] = []
+    domain_list: list[str] = []
     management_software: bool = False
-    fabric_uuids: List[str] = []
-    switch_uuids: List[str] = []
+    fabric_uuids: list[str] = []
+    switch_uuids: list[str] = []
 
     @root_validator(pre=True)
     def check_domains(cls, values):
@@ -74,8 +74,8 @@ class Checkpoint(BaseModel):
     name: str
     description: str = ""
     checkpoint_type: Literal["One-Time", "System"] = "One-Time"
-    fabric_uuids: List[str] = []
-    switch_uuids: List[str] = []
+    fabric_uuids: list[str] = []
+    switch_uuids: list[str] = []
 
     @root_validator(pre=True)
     def check_domains(cls, values):
@@ -122,7 +122,7 @@ class ScheduledCheckpoint(BaseModel):
 
 class RollbackConfig(BaseModel):
     checkpoint: str = None
-    snapshots: List[str] = None
+    snapshots: list[str] = None
     overwrite_startup_config: bool = True
 
 
@@ -155,8 +155,8 @@ class RadiusSource(BaseModel):
 
 class ApplyRadius(BaseModel):
     radius_uuid: str
-    fabric_uuids: List[str] = None
-    switch_uuids: List[str] = None
+    fabric_uuids: list[str] = None
+    switch_uuids: list[str] = None
 
     @root_validator(pre=True)
     def check_uuids(cls, values):
@@ -196,9 +196,9 @@ class SyslogPersistentStorage(BaseModel):
 class Syslog(BaseModel):
     name: str
     description: str = ""
-    entry_list: List[SyslogEntry]
-    fabric_uuids: List[str] = []
-    switch_uuids: List[str] = []
+    entry_list: list[SyslogEntry]
+    fabric_uuids: list[str] = []
+    switch_uuids: list[str] = []
     management_software: bool = False
     facility: Literal[
         "LOCAL0",
@@ -218,14 +218,14 @@ class Syslog(BaseModel):
 class Sflow(BaseModel):
     name: str
     description: str = ""
-    fabric_uuids: List[str] = []
-    switch_uuids: List[str] = []
+    fabric_uuids: list[str] = []
+    switch_uuids: list[str] = []
     enable_sflow: bool = True
     polling_interval: int = 20
     sampling_rate: int = 20000
     source_ip_address: str = None
     source_namespace: str = "management"
-    collectors: List[dict] = []
+    collectors: list[dict] = []
 
 
 class Stp(BaseModel):
@@ -264,10 +264,10 @@ class Snmp(BaseModel):
     community: str = None
     agent_port: int | None = 161
     trap_port: int = None
-    users: List[SnmpUsers] | None = None
-    trap_sink: List[SnmpTrapServer] | None = None
-    fabric_uuids: List[str] = []
-    switch_uuids: List[str] = []
+    users: list[SnmpUsers] | None = None
+    trap_sink: list[SnmpTrapServer] | None = None
+    fabric_uuids: list[str] = []
+    switch_uuids: list[str] = []
 
 
 class DhcpRelay(BaseModel):
@@ -275,14 +275,14 @@ class DhcpRelay(BaseModel):
     description: str = ""
     vlans: str
     gateway_address: str = None
-    ipv4_dhcp_server_addresses: List[IPv4Address] = []
-    ipv6_dhcp_server_addresses: List[IPv6Address] = []
-    ipv6_dhcp_mcast_server_addresses: List[IPv6Address] = []
+    ipv4_dhcp_server_addresses: list[IPv4Address] = []
+    ipv6_dhcp_server_addresses: list[IPv6Address] = []
+    ipv6_dhcp_mcast_server_addresses: list[IPv6Address] = []
     v4relay_option82_policy: Literal["replace", "drop", "keep"] = "replace"
     v4relay_option82_validation: bool = False
     v4relay_source_interface: bool = False
-    fabric_uuids: List[str] = []
-    switch_uuids: List[str] = []
+    fabric_uuids: list[str] = []
+    switch_uuids: list[str] = []
 
     @root_validator(skip_on_failure=True)
     def convert_ip(cls, values):

@@ -1,7 +1,7 @@
 # (C) Copyright 2020-2025 Hewlett Packard Enterprise Development LP.
 # Apache License 2.0
 
-from typing import List, Literal
+from typing import Literal
 
 from pydantic import BaseModel, Field, root_validator
 
@@ -21,7 +21,7 @@ class Speed(BaseModel):
 
 class PortProperties(BaseModel):
     lacp: LACP = Field(default_factory=LACP)
-    port_uuids: List[str]
+    port_uuids: list[str]
     speed: Speed = Field(default_factory=Speed)
     switch_uuid: str = None
 
@@ -50,7 +50,7 @@ class LAG(BaseModel):
 
 class InternalLAG(BaseModel):
     name: str
-    port_properties: List[PortProperties]
+    port_properties: list[PortProperties]
     type: str = "internal"
     fabric_uuid: str = None
     mlag: bool = False

@@ -2,7 +2,6 @@
 # Apache License 2.0
 from __future__ import annotations
 
-from typing import List
 
 from pydantic import BaseModel
 
@@ -16,7 +15,7 @@ class Psm(BaseModel):
     username: str
     password: str
     enabled: bool = True
-    fabric_uuid: List[str]
+    fabric_uuid: list[str]
     verify_ssl: bool = False
     orchestrator_uuids: list = []
     auto_decommission_dss: bool = False

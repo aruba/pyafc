@@ -2,7 +2,7 @@
 # Apache License 2.0
 
 from ipaddress import IPv4Address
-from typing import List, Literal
+from typing import Literal
 
 from pydantic import BaseModel, root_validator
 
@@ -61,9 +61,9 @@ class RouteMapEntry(BaseModel):
 class RouteMap(BaseModel):
     name: str
     description: str = ""
-    fabric_uuids: List[str] = []
-    switch_uuids: List[str] = []
-    entries: List[RouteMapEntry]
+    fabric_uuids: list[str] = []
+    switch_uuids: list[str] = []
+    entries: list[RouteMapEntry]
 
 
 class EntryPrefix(BaseModel):
@@ -88,9 +88,9 @@ class PrefixListEntry(BaseModel):
 class PrefixList(BaseModel):
     name: str
     description: str = ""
-    fabric_uuids: List[str] = []
-    switch_uuids: List[str] = []
-    entries: List[PrefixListEntry]
+    fabric_uuids: list[str] = []
+    switch_uuids: list[str] = []
+    entries: list[PrefixListEntry]
     address_family: str = "ipv4"
     origin: str = "local-prefix-list"
 
@@ -105,15 +105,15 @@ class CommunityListEntry(BaseModel):
 class CommunityList(BaseModel):
     name: str
     description: str = ""
-    fabric_uuids: List[str] = []
-    switch_uuids: List[str] = []
+    fabric_uuids: list[str] = []
+    switch_uuids: list[str] = []
     type: Literal[
         "community-list",
         "community-expanded-list",
         "extcommunity-list",
         "extcommunity-expanded-list",
     ]
-    entries: List[CommunityListEntry]
+    entries: list[CommunityListEntry]
 
 
 class ASPathListEntry(BaseModel):
@@ -126,6 +126,6 @@ class ASPathListEntry(BaseModel):
 class ASPathList(BaseModel):
     name: str
     description: str = ""
-    fabric_uuids: List[str] = []
-    switch_uuids: List[str] = []
-    entries: List[ASPathListEntry]
+    fabric_uuids: list[str] = []
+    switch_uuids: list[str] = []
+    entries: list[ASPathListEntry]

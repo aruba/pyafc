@@ -1,7 +1,6 @@
 # (C) Copyright 2020-2025 Hewlett Packard Enterprise Development LP.
 # Apache License 2.0
 
-from typing import List
 
 from pydantic import BaseModel
 
@@ -16,7 +15,7 @@ class HealthIssues(BaseModel):
 
 class Health(BaseModel):
     status: str
-    health_issues: List[HealthIssues]
+    health_issues: list[HealthIssues]
 
 
 class Afc(BaseModel):
@@ -25,4 +24,4 @@ class Afc(BaseModel):
     description: str = None
     health: Health
     software: str
-    qualified_cx_api_versions: List[str]
+    qualified_cx_api_versions: list[str]

@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import List, Literal
+from typing import Literal
 
 from pydantic import BaseModel
 
@@ -56,7 +56,7 @@ class SwitchDiscovery(BaseModel):
 
     """
 
-    switches: List[str]
+    switches: list[str]
     admin_passwd: str
     afc_admin_passwd: str
 
@@ -72,9 +72,9 @@ class CLI(BaseModel):
 
     """
 
-    switch_names: List[str] = []
-    switch_uuids: List[str] = []
-    commands: List[str]
+    switch_names: list[str] = []
+    switch_uuids: list[str] = []
+    commands: list[str]
 
 
 class FirmwareSwitchesGroup(BaseModel):
@@ -103,7 +103,7 @@ class FirmwareSwitches(BaseModel):
 
     """
 
-    switches: List[FirmwareSwitchesGroup]
+    switches: list[FirmwareSwitchesGroup]
 
 
 class FirmwareStaging(BaseModel):
@@ -117,7 +117,7 @@ class FirmwareStaging(BaseModel):
 
     """
 
-    groups: List[FirmwareSwitches]
+    groups: list[FirmwareSwitches]
     upgrade_type: Literal["immediate", "sequenced"] = "immediate"
 
 
@@ -147,7 +147,7 @@ class RebootSwitches(BaseModel):
 
     """
 
-    switches: List[Reboot]
+    switches: list[Reboot]
 
 
 class ReconcileSwitches(BaseModel):
@@ -161,7 +161,7 @@ class ReconcileSwitches(BaseModel):
 
     """
 
-    switches: List[str]
+    switches: list[str]
 
 
 class SaveConfigSwitches(BaseModel):
@@ -175,4 +175,4 @@ class SaveConfigSwitches(BaseModel):
 
     """
 
-    switches: List[str]
+    switches: list[str]

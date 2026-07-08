@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import List, Literal
+from typing import Literal
 
 from pydantic import BaseModel, Field, root_validator
 
@@ -53,7 +53,7 @@ class RouteTargets(BaseModel):
     """
 
     primary_route_target: RouteTarget
-    secondary_route_targets: List[RouteTarget] = []
+    secondary_route_targets: list[RouteTarget] = []
 
 
 class VRF(BaseModel):
@@ -70,7 +70,7 @@ class VRF(BaseModel):
     name: str
     fabric_uuid: str
     vni: int = None
-    switch_uuids: List[str] = []
+    switch_uuids: list[str] = []
     route_target: RouteTargets = {}
     route_distinguisher: str = "loopback1:1"
     max_cps_mode: str = "unlimited"
@@ -709,7 +709,7 @@ class OspfRouter(BaseModel):
 
     name_prefix: str
     description: str = ""
-    switch_uuids: List[str]
+    switch_uuids: list[str]
     enable: bool = True
     id: int = 1
     redistribute: OspfRedistribute = None
@@ -788,7 +788,7 @@ class OspfInterface(BaseModel):
     ignore_mtu_mismatch: bool = False
     passive_mode: bool = False
     authentication_value: str = ""
-    md5_list: List[str] = []
+    md5_list: list[str] = []
     authentication_type: Literal["simple-text", "message-digest"] = "null"
     network_type: Literal[
         "ospf_iftype_pointopoint",
@@ -847,7 +847,7 @@ class StaticRoute(BaseModel):
     description: str = ""
     distance: int | None = Field(default=None, gt=0, lt=256)
     tag: int | None = Field(default=None, gt=0, lt=4294967295)
-    switch_uuids: List[str]
+    switch_uuids: list[str]
     type: Literal["forward", "nullroute"] | None = "forward"
 
 
@@ -891,7 +891,7 @@ class BgpNeighbor(BaseModel):
     keepalive_timer: int = 60
     holddown_timer: int = 180
     neighbor_type: Literal["ibgp", "ebgp"] = None
-    address_families: List[Literal["evpn", "ipv4", "ipv6", "vpnv4"]]
+    address_families: list[Literal["evpn", "ipv4", "ipv6", "vpnv4"]]
     external_bgp_multihop: int = None
     update_source_address: str = None
     update_source_interface: str = None
@@ -924,7 +924,7 @@ class BgpConfig(BaseModel):
     switch_uuid: str
     name: str
     description: str = ""
-    networks: List[BgpNetwork] = []
+    networks: list[BgpNetwork] = []
     redistribute_static: bool = False
     redistribute_ospf: bool = False
     redistribute_connected: bool = True
@@ -939,14 +939,14 @@ class BgpConfig(BaseModel):
     router_id: str
     keepalive_timer: int = 60
     holddown_timer: int = 180
-    neighbors: List[BgpNeighbor] = []
+    neighbors: list[BgpNeighbor] = []
     as_number: str
     maximum_paths: int = 8
     redistribute_connected_route_map: str = ""
     redistribute_ospf_route_map: str = None
     redistribute_local_route_map: str = None
     redistribute_static_route_map: str = None
-    redistribute_ospf_process_route_map: List[OspfProcessRedistributeRouteMap] = []
+    redistribute_ospf_process_route_map: list[OspfProcessRedistributeRouteMap] = []
 
     @root_validator(pre=True)
     def convert_values(cls, values: dict) -> dict:
@@ -967,4 +967,4 @@ class BgpConfig(BaseModel):
 
 class BgpSwitchConfigList(BaseModel):
 
-    switches: List[BgpConfig]
+    switches: list[BgpConfig]
