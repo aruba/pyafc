@@ -396,8 +396,8 @@ class OSPF:
                 )
                 if not ip_intf_values:
                     raise exceptions.InterfaceNotFound
-            except TypeError:
-                raise exceptions.InterfaceNotFound
+            except TypeError as exc:
+                raise exceptions.InterfaceNotFound from exc
 
             kwargs["if_uuid"] = ip_intf_values["uuid"]
             process = kwargs.get("process", 1)
@@ -407,8 +407,8 @@ class OSPF:
                     area=kwargs["area"],
                     process=process,
                 )
-            except TypeError:
-                raise exceptions.RouterAreaNotFound
+            except TypeError as exc:
+                raise exceptions.RouterAreaNotFound from exc
 
             data = models.OspfInterface(**kwargs)
             uri_ospf_intf = f"vrfs/{self.uuid}/ospf_routers/{router['instance_uuid']}/areas/{area['area_uuid']}/interfaces"

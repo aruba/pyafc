@@ -236,7 +236,7 @@ def populate_list_fabrics_switches(client: Client, values: dict) -> dict:
             raise exceptions.NoDeviceFound(msg)
 
     except exceptions.NoDeviceFound as exc:
-        raise exceptions.NoDeviceFound(exc)
+        raise exceptions.NoDeviceFound(exc) from exc
 
     return values
 
@@ -282,9 +282,9 @@ def populate_list_switches(
                     switches_list.extend(
                         consolidate_switches_list(client, values["switches"]),
                     )
-                except exceptions.NoDeviceFound:
+                except exceptions.NoDeviceFound as exc:
                     msg = "No devices found"
-                    raise exceptions.NoDeviceFound(msg)
+                    raise exceptions.NoDeviceFound(msg) from exc
         else:
             raise exceptions.NotGoodVar
 
