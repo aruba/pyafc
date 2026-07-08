@@ -151,7 +151,7 @@ class Policy:
 
                 add_request = self.client.post(
                     "policies",
-                    data=json.dumps(data.dict(exclude_none=True)),
+                    data=json.dumps(data.model_dump(exclude_none=True)),
                 )
 
                 if add_request.status_code in utils.response_ok:

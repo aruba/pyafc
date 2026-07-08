@@ -68,7 +68,7 @@ class CLI:
 
         send_request = self.client.post(
             "switches/cli_commands",
-            data=json.dumps(payload.dict()),
+            data=json.dumps(payload.model_dump()),
         )
 
         if send_request.status_code in utils.response_ok:

@@ -106,7 +106,7 @@ class Pool:
                 data = models.ResourcesPool(**values)
                 add_request = self.client.post(
                     "resource_pool",
-                    data=json.dumps(data.dict()),
+                    data=json.dumps(data.model_dump()),
                 )
 
                 if add_request.status_code in utils.response_ok:

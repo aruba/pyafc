@@ -109,7 +109,7 @@ class Fabric(
                 data = models.Fabric(name=name, **kwargs)
                 fabric_request = self.client.post(
                     "fabrics",
-                    data=json.dumps(data.dict(exclude_none=True)),
+                    data=json.dumps(data.model_dump(exclude_none=True)),
                 )
                 if fabric_request.status_code in utils.response_ok:
                     if self.__instantiate_details():

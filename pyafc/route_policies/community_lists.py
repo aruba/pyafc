@@ -125,7 +125,7 @@ class CommunityList:
 
                 add_request = self.client.post(
                     "community_lists",
-                    data=json.dumps(data.dict(exclude_none=True)),
+                    data=json.dumps(data.model_dump(exclude_none=True)),
                 )
                 if add_request.status_code in utils.response_ok:
                     _message = (
@@ -203,7 +203,7 @@ class CommunityList:
 
             add_request = self.client.post(
                 f"community_lists/{self.uuid}/community_lists_entries",
-                data=json.dumps(data.dict(exclude_none=True)),
+                data=json.dumps(data.model_dump(exclude_none=True)),
             )
             if add_request.status_code in utils.response_ok:
                 _message = (

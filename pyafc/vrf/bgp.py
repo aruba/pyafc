@@ -79,7 +79,7 @@ class BGP:
 
         if changes_needed:
             data = models.BGPUpdate(**kwargs)
-            data = switches_data.dict() | data.dict()
+            data = switches_data.model_dump() | data.model_dump()
 
             bgp_request = self.client.put(url_bgp, data=json.dumps(data))
             if bgp_request.status_code in utils.response_ok:
@@ -171,7 +171,7 @@ class BGP:
                 data = models.BGPUpdate(**kwargs)
                 bgp_request = self.client.put(
                     url_bgp,
-                    data=json.dumps(data.dict()),
+                    data=json.dumps(data.model_dump()),
                 )
 
                 if bgp_request.status_code in utils.response_ok:
@@ -213,13 +213,13 @@ class BGP:
         if kwargs.get("same_config_than"):
             data = self.get_bgp_switch_details(kwargs["same_config_than"])
             data = models.BGPConfig(**data)
-            data = data.dict()
+            data = data.model_dump()
             data["router_id"] = (
                 kwargs["router_id"] if kwargs.get("router_id") else None
             )
         else:
             data = models.BGPConfig(**kwargs)
-            data = data.dict()
+            data = data.model_dump()
         try:
             switch_instance = switches.Switch(self.client, kwargs["switch"])
             data["name"] = switch_instance.name
@@ -263,7 +263,7 @@ class BGP:
         else:
             data = models.BGPUpdateSwitch(**kwargs)
 
-        data = data.dict()
+        data = data.model_dump()
 
         if data["as_number"] == "0":
             _message = "AS Number not provided - No action taken"
@@ -441,7 +441,7 @@ class BGP:
         )
         if bgp_data:
             data = models.BgpNeighbor(name=name, **kwargs)
-            bgp_data["neighbors"].append(data.dict(exclude_none=True))
+            bgp_data["neighbors"].append(data.model_dump(exclude_none=True))
             bgp_request = self.client.put(
                 f"vrfs/{self.uuid}/bgp/{switch_uuid}",
                 data=json.dumps(bgp_data),

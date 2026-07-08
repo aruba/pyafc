@@ -3,7 +3,7 @@
 
 from typing import Literal
 
-from pydantic import BaseModel, Field, root_validator
+from pydantic import BaseModel, Field, model_validator
 
 """Models file is used to create a dictionary needed for request."""
 
@@ -35,7 +35,8 @@ class Backup(BaseModel):
     retention_unit: Literal["hour", "day", "week", "month"] | None = "hour"
     include_psm_snapshot: bool | None = True
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def convert_values(cls, values: dict) -> dict:
         """convert_values Convert values to expected ones.
 
@@ -65,7 +66,8 @@ class BackupRule(BaseModel):
     retention_unit: Literal["hour", "day", "week", "month"] | None = "hour"
     include_psm_snapshot: bool | None = True
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def convert_values(cls, values: dict) -> dict:
         """convert_values Convert values to expected ones.
 

@@ -81,7 +81,7 @@ class LS:
             uri_l3ls = f"/fabrics/{self.uuid}/leaf_spine_workflow"
             l3ls_request = self.client.post(
                 uri_l3ls,
-                data=json.dumps(data.dict(exclude_none=True)),
+                data=json.dumps(data.model_dump(exclude_none=True)),
             )
             if l3ls_request.status_code in utils.response_ok:
                 _message = "Successfully created L3 Leaf Spine configuration"

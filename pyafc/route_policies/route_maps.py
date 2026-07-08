@@ -128,7 +128,7 @@ class RouteMap:
 
                 add_request = self.client.post(
                     "route_maps",
-                    data=json.dumps(data.dict(exclude_none=True)),
+                    data=json.dumps(data.model_dump(exclude_none=True)),
                 )
                 if add_request.status_code in utils.response_ok:
                     _message = f"Successfully created route map {self.name}"
@@ -254,7 +254,7 @@ class RouteMap:
 
             add_request = self.client.post(
                 f"route_maps/{self.uuid}/route_map_entries",
-                data=json.dumps(data.dict(exclude_none=True)),
+                data=json.dumps(data.model_dump(exclude_none=True)),
             )
             if add_request.status_code in utils.response_ok:
                 _message = "Successfully added route map entry"

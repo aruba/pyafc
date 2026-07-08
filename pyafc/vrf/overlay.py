@@ -112,7 +112,7 @@ class Overlay:
             uri_overlay = f"/vrfs/{self.uuid}/overlay"
             overlay_request = self.client.post(
                 uri_overlay,
-                data=json.dumps(data.dict(exclude_none=True)),
+                data=json.dumps(data.model_dump(exclude_none=True)),
             )
 
             if overlay_request.status_code in utils.response_ok:
@@ -188,7 +188,7 @@ class Overlay:
             data = self.get_overlay(name)
             url_overlay = f"vrfs/{self.uuid}/overlay/{data['uuid']}"
             data = models.OverlayReapply(**data)
-            data = utils.remove_null_from_dict(data.dict())
+            data = utils.remove_null_from_dict(data.model_dump())
             data["update"] = False
             overlay_request = self.client.put(
                 url_overlay,

@@ -116,7 +116,7 @@ class PrefixList:
 
                 add_request = self.client.post(
                     "prefix_lists",
-                    data=json.dumps(data.dict(exclude_none=True)),
+                    data=json.dumps(data.model_dump(exclude_none=True)),
                 )
                 if add_request.status_code in utils.response_ok:
                     _message = f"Successfully created prefix list {self.name}"
@@ -192,7 +192,7 @@ class PrefixList:
 
             add_request = self.client.post(
                 f"prefix_lists/{self.uuid}/prefix_list_entries",
-                data=json.dumps(data.dict(exclude_none=True)),
+                data=json.dumps(data.model_dump(exclude_none=True)),
             )
             if add_request.status_code in utils.response_ok:
                 _message = (

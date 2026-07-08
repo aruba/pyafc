@@ -4,7 +4,7 @@
 from ipaddress import IPv4Address
 from typing import Literal
 
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel, model_validator
 
 """Models file is used to create a dictionary that is later used."""
 
@@ -46,16 +46,16 @@ class RouteMapEntry(BaseModel):
     set_tag: int = None
     set_weight: int = None
 
-    @root_validator(skip_on_failure=True)
-    def check_seq(cls, values):
+    @model_validator(mode="after")
+    def check_seq(self):
         if (
-            values.get("route_map_continue")
-            and values["route_map_continue"] < values["seq"]
+            self.route_map_continue
+            and self.route_map_continue < self.seq
         ):
             raise ValueError(
                 "Continue Sequence must be higher than the Route Map Sequence"
             )
-        return values
+        return self
 
 
 class RouteMap(BaseModel):
@@ -70,10 +70,10 @@ class EntryPrefix(BaseModel):
     address: IPv4Address
     prefix_length: int
 
-    @root_validator(skip_on_failure=True)
-    def convert_ip(cls, values):
-        values["address"] = str(values["address"])
-        return values
+    @model_validator(mode="after")
+    def convert_ip(self):
+        self.address = str(self.address)
+        return self
 
 
 class PrefixListEntry(BaseModel):

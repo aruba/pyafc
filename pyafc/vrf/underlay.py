@@ -92,7 +92,7 @@ class Underlay:
                 uri_underlay = f"/vrfs/{self.uuid}/underlay"
                 underlay_request = self.client.post(
                     uri_underlay,
-                    data=json.dumps(data.dict(exclude_none=True)),
+                    data=json.dumps(data.model_dump(exclude_none=True)),
                 )
                 if underlay_request.status_code in utils.response_ok:
                     _message = (
@@ -170,7 +170,7 @@ class Underlay:
             data = self.get_underlay(name)
             url_underlay = f"vrfs/{self.uuid}/underlay/{data['uuid']}"
             data = models.UnderlayReapply(**data)
-            data = utils.remove_null_from_dict(data.dict())
+            data = utils.remove_null_from_dict(data.model_dump())
             data["update"] = False
             underlay_request = self.client.put(
                 url_underlay,

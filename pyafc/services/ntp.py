@@ -120,7 +120,7 @@ class Ntp:
 
                 add_request = self.client.post(
                     "ntp_client_configurations",
-                    data=json.dumps(data.dict()),
+                    data=json.dumps(data.model_dump()),
                 )
                 if add_request.status_code in utils.response_nok:
                     _message = (

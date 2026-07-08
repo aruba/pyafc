@@ -62,7 +62,7 @@ class Network:
             if not vlan_exists:
                 network_request = self.client.post(
                     uri_network,
-                    data=json.dumps(data.dict()),
+                    data=json.dumps(data.model_dump()),
                 )
 
                 if network_request.status_code in utils.response_ok:
@@ -112,7 +112,7 @@ class Network:
                     break
 
             if vlan_exists:
-                for key, value in data.dict(exclude_none=True).items():
+                for key, value in data.model_dump(exclude_none=True).items():
                     network[key] = value
 
                 network_request = self.client.put(

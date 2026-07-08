@@ -216,7 +216,7 @@ class Vrf(
 
             vrf_request = self.client.post(
                 "vrfs",
-                data=json.dumps(data.dict(exclude_none=True)),
+                data=json.dumps(data.model_dump(exclude_none=True)),
             )
             if (
                 "should be unique for fabric" in vrf_request.json()["result"]
@@ -305,7 +305,7 @@ class Vrf(
                 data = models.VRFReapply(**kwargs)
                 vrf_request = self.client.put(
                     f"vrfs/{self.uuid}/switches/{switch['switch_uuid']}",
-                    data=json.dumps(data.dict()),
+                    data=json.dumps(data.model_dump()),
                 )
                 if vrf_request.status_code not in utils.response_ok:
                     raise exceptions.UpdateFailed(switch["name"])

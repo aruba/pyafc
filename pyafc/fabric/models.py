@@ -3,7 +3,7 @@
 
 from typing import Literal
 
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel, model_validator
 
 """Models file is used to create a dictionary that is later used."""
 
@@ -29,7 +29,8 @@ class EVPN(BaseModel):
     vlans: str
     vni_base: int
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def convert_values(cls, values):
         new_values = values.copy()
         if values.get("name"):
@@ -48,7 +49,8 @@ class Vsx(BaseModel):
     keepalive_ip_pool_range: ResourcePool = None
     keep_alive_interface_mode: str
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def convert_pools(cls, values):
         new_values = values.copy()
         if values.get("system_mac_range"):

@@ -94,7 +94,7 @@ class EVPN:
                     kwargs["switch_uuids"] = switches_uuid_list
 
                 data = models.EVPN(**kwargs)
-                data = data.dict(exclude_none=True)
+                data = data.model_dump(exclude_none=True)
                 if "description" in kwargs and kwargs["description"] != "":
                     data["description"] = kwargs["description"]
                 else:

@@ -178,7 +178,7 @@ class OSPF:
 
             ospf_router_request = self.client.post(
                 uri_ospf_router,
-                data=json.dumps(data.dict(exclude_none=True)),
+                data=json.dumps(data.model_dump(exclude_none=True)),
             )
 
             if ospf_router_request.status_code in utils.response_ok:
@@ -241,7 +241,7 @@ class OSPF:
                     uri_ospf_area = f"vrfs/{self.uuid}/ospf_routers/{router['instance_uuid']}/areas"
                     ospf_area_request = self.client.post(
                         uri_ospf_area,
-                        data=json.dumps(data.dict(exclude_none=True)),
+                        data=json.dumps(data.model_dump(exclude_none=True)),
                     )
                     if ospf_area_request.status_code in utils.response_ok:
                         _message = "Successfully configured OSPF Area"
@@ -415,7 +415,7 @@ class OSPF:
 
             ospf_intf_request = self.client.post(
                 uri_ospf_intf,
-                data=json.dumps(data.dict()),
+                data=json.dumps(data.model_dump()),
             )
 
             if ospf_intf_request.status_code in utils.response_ok:

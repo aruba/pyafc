@@ -129,7 +129,7 @@ class VSX(Internal):
             kwargs["keepalive_ip_pool_range"] = ipv4_pool["uuid"]
 
             data = models.Vsx(**kwargs)
-            data = data.dict(exclude_none=True)
+            data = data.model_dump(exclude_none=True)
 
             existing_vsx = self.get_vsx()
 

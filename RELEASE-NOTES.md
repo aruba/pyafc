@@ -29,6 +29,23 @@ asynchronous HTTP clients). It now verifies the AFC certificate by default.
   The recommended long-term fix is to install a trusted certificate on AFC
   so that verification can stay enabled.
 
+#### Migrated from Pydantic v1 to Pydantic v2
+`pyafc` now requires **Pydantic v2** (`pydantic>=2,<3`) instead of the
+previously pinned `pydantic==1.10.12`.
+
+- **Who is affected:** any environment that also depends on Pydantic v1, or
+  that imports `pyafc` models and uses the Pydantic v1 API directly.
+- **What changed internally:** validators were moved from `root_validator`
+  to `model_validator` (`mode="before"`/`mode="after"`), model serialization
+  now uses `model_dump()` instead of `.dict()`, and one optional field was
+  given an explicit `default=None`. The public behaviour of every model is
+  unchanged.
+- **Note on strictness:** Pydantic v2 no longer coerces `int` to `str`
+  automatically. Fields that accept stringified numbers are converted with a
+  `mode="before"` validator so existing input keeps working.
+- **How to migrate:** upgrade the environment to Pydantic v2. If your own
+  code calls `.dict()` on a `pyafc` model, switch to `.model_dump()`.
+
 ### Security Fixes
 - Made TLS certificate verification configurable via the `verify` key with a
   secure default of `True`.

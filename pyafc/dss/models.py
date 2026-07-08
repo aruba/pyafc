@@ -3,7 +3,7 @@
 
 from typing import Literal
 
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel, model_validator
 
 """Models file is used to create a dictionary."""
 
@@ -18,7 +18,8 @@ class PsmRule(BaseModel):
     applications: list[str] = []
     action: Literal["allow", "drop"] = "allow"
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def convert_int_to_str(cls, values):
         if values.get("rule_type"):
             values["type"] = values["rule_type"]
@@ -45,7 +46,8 @@ class PsmPolicies(BaseModel):
     enforcers: list[PolicyEnforcer] = []
     object_type: str = "policy"
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def convert_int_to_str(cls, values):
         if values.get("eg_type"):
             values["type"] = values["eg_type"]
@@ -76,7 +78,8 @@ class PsmEndpointGroups(BaseModel):
     sub_type: Literal["ip_collection", "ip_address"] = "ip_address"
     endpoints: list[Endpoints] = []
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def convert_int_to_str(cls, values):
         if values.get("eg_type"):
             values["type"] = values["eg_type"]
@@ -92,7 +95,8 @@ class Qualifier(BaseModel):
     dst_port: str = None
     ip_protocol: str = None
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def convert_int_to_str(cls, values):
         if values.get("src_port"):
             values["src_port"] = str(values["src_port"])
@@ -145,7 +149,8 @@ class Alg(BaseModel):
     sunrpc: SunRPC = None
     msrpc: Msrpc = None
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def native_integration(cls, values):
         if values["type"] == "ftp" and not values.get("ftp"):
             values["ftp"] = Ftp()

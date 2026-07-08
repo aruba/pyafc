@@ -286,7 +286,7 @@ class Switch:
             uri_reboot = "/switches/reboot"
             reboot_request = client.put(
                 uri_reboot,
-                data=json.dumps(data.dict()),
+                data=json.dumps(data.model_dump()),
             )
             if reboot_request.status_code in utils.response_ok:
                 _message = "Successfully rebooted devices"
@@ -347,7 +347,7 @@ class Switch:
         uri_reconcile = "/switches/reconcile"
         reconcile_request = client.put(
             uri_reconcile,
-            data=json.dumps(data.dict()),
+            data=json.dumps(data.model_dump()),
         )
 
         if reconcile_request.status_code in utils.response_ok:
@@ -411,7 +411,7 @@ class Switch:
         uri_save_config = "/switches/save_config"
         save_config_request = client.put(
             uri_save_config,
-            data=json.dumps(data.dict()),
+            data=json.dumps(data.model_dump()),
         )
         if save_config_request.status_code in utils.response_ok:
             _message = "Successfully saved configuration"
@@ -437,7 +437,7 @@ class Switch:
         _changed = False
 
         try:
-            data = models.Switch(**data).dict(exclude_none=True)
+            data = models.Switch(**data).model_dump(exclude_none=True)
         except ValidationError:
             _message = "Some attributes or values are not as expected"
             return _message, _status, _changed
@@ -508,7 +508,7 @@ class Switch:
             data = models.SwitchDiscovery(switches=[self.ipaddress], **kwargs)
             add_request = self.client.post(
                 "switches/discover",
-                data=json.dumps(data.dict(exclude_none=True)),
+                data=json.dumps(data.model_dump(exclude_none=True)),
             )
             if add_request.status_code in utils.response_ok:
                 switch_details = self.get_switch_details()
@@ -610,7 +610,7 @@ class Switch:
 
             add_request = self.client.post(
                 "switches/discover",
-                data=json.dumps(data.dict(exclude_none=True)),
+                data=json.dumps(data.model_dump(exclude_none=True)),
             )
 
             if add_request.status_code in utils.response_ok:

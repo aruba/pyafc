@@ -116,7 +116,7 @@ class Dns:
                 data = models.Dns(name=self.name, **kwargs)
                 add_request = self.client.post(
                     "dns_client_configurations",
-                    data=json.dumps(data.dict()),
+                    data=json.dumps(data.model_dump()),
                 )
                 if add_request.status_code in utils.response_ok:
                     _message = (

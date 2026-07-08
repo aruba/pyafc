@@ -134,7 +134,7 @@ class Syslog:
                 data = models.Syslog(name=self.name, **temp_values)
                 add_request = self.client.post(
                     "syslog_client_configurations",
-                    data=json.dumps(data.dict(exclude_none=True)),
+                    data=json.dumps(data.model_dump(exclude_none=True)),
                 )
                 if add_request.status_code in utils.response_ok:
                     _message = (

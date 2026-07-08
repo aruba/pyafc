@@ -3,7 +3,7 @@
 
 from typing import Literal
 
-from pydantic import BaseModel, Field, root_validator
+from pydantic import BaseModel, Field, model_validator
 
 """Models file is used to create a dictionary that is later used."""
 
@@ -41,7 +41,8 @@ class LAG(BaseModel):
     vlan_mode: str = "null"
     status: str = "null"
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def check_ports(cls, values):
         if not values["port_properties"]:
             raise ValueError("Specified ports do not exist")

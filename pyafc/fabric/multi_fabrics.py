@@ -196,7 +196,7 @@ class MultiFabrics:
 
             multi_fabrics_request = self.client.post(
                 uri_multi_fabrics,
-                data=json.dumps(data.dict(exclude_none=True)),
+                data=json.dumps(data.model_dump(exclude_none=True)),
             )
 
             if multi_fabrics_request.status_code in utils.response_ok:
@@ -254,7 +254,7 @@ class MultiFabrics:
             uri_stretching = "/evpn/multi_site"
             stretching_request = self.client.post(
                 uri_stretching,
-                data=json.dumps(data.dict()),
+                data=json.dumps(data.model_dump()),
             )
 
             if stretching_request.status_code in utils.response_ok:

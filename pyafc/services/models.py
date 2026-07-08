@@ -4,7 +4,7 @@
 from ipaddress import IPv4Address, IPv6Address
 from typing import Literal
 
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel, model_validator
 
 """Models file is used to create a dictionary that is later used."""
 
@@ -25,9 +25,11 @@ class ResourcesPool(BaseModel):
     type: Literal["MAC", "IPv4"]
     pool_ranges: str = ""
 
-    @root_validator(skip_on_failure=True)
+    @model_validator(mode="before")
+    @classmethod
     def convert_to_str(cls, values):
-        values["pool_ranges"] = str(values["pool_ranges"])
+        if isinstance(values, dict) and values.get("pool_ranges") is not None:
+            values["pool_ranges"] = str(values["pool_ranges"])
         return values
 
 
@@ -44,7 +46,8 @@ class Ntp(BaseModel):
     switch_uuids: list[str] = []
     entry_list: list[NtpEntry]
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def convert_servers(cls, values):
         if values.get("servers"):
             values["entry_list"] = values["servers"]
@@ -63,7 +66,8 @@ class Dns(BaseModel):
     fabric_uuids: list[str] = []
     switch_uuids: list[str] = []
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def check_domains(cls, values):
         if not values.get("domain_name") and not values.get("domain_list"):
             raise ValueError("Domain Name or Domain List must be specified")
@@ -77,7 +81,8 @@ class Checkpoint(BaseModel):
     fabric_uuids: list[str] = []
     switch_uuids: list[str] = []
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def check_domains(cls, values):
         if not values.get("fabric_uuids") and not values.get("switch_uuids"):
             raise ValueError("Fabrics or Switches must be specified")
@@ -93,7 +98,8 @@ class ScheduleRule(BaseModel):
     day_of_week: str = "*"
     day_of_month: str = "*"
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def convert_days_week(cls, values):
         if values.get("day_of_week"):
             values["day_of_week"] = Days_Of_The_Week[values["day_of_week"]]
@@ -111,7 +117,8 @@ class ScheduledCheckpoint(BaseModel):
     scheduler_operation: Literal["START", "STOP"] = "START"
     checkpoint_rule: CheckpointRule
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def convert_values(cls, values):
         if values.get("enable"):
             values["scheduler_operation"] = (
@@ -134,7 +141,8 @@ class Rollback(BaseModel):
     rollback_type: Literal["Config", "Image", "Config_Image"] = "Config"
     rollback: RollbackValues
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def convert_type(cls, values):
         if values.get("rollback_type"):
             values["rollback_type"] = values["rollback_type"].title()
@@ -158,7 +166,8 @@ class ApplyRadius(BaseModel):
     fabric_uuids: list[str] = None
     switch_uuids: list[str] = None
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def check_uuids(cls, values):
         if not values.get("fabric_uuids") and not values.get("switch_uuids"):
             raise ValueError("Fabrics or Switch must be specified")
@@ -180,10 +189,10 @@ class SyslogEntry(BaseModel):
     tls_auth_mode: Literal["certificate", "subject-name"] = None
     transport: Literal["udp", "tcp", "tls"] = "udp"
 
-    @root_validator(skip_on_failure=True)
-    def convert_ip(cls, values):
-        values["host"] = str(values["host"])
-        return values
+    @model_validator(mode="after")
+    def convert_ip(self):
+        self.host = str(self.host)
+        return self
 
 
 class SyslogPersistentStorage(BaseModel):
@@ -249,10 +258,10 @@ class SnmpTrapServer(BaseModel):
     address: IPv4Address
     community: str
 
-    @root_validator(skip_on_failure=True)
-    def convert_ip(cls, values):
-        values["address"] = str(values["address"])
-        return values
+    @model_validator(mode="after")
+    def convert_ip(self):
+        self.address = str(self.address)
+        return self
 
 
 class Snmp(BaseModel):
@@ -284,21 +293,18 @@ class DhcpRelay(BaseModel):
     fabric_uuids: list[str] = []
     switch_uuids: list[str] = []
 
-    @root_validator(skip_on_failure=True)
-    def convert_ip(cls, values):
-        if values["ipv4_dhcp_server_addresses"]:
-            new_values = []
-            for ip in values["ipv4_dhcp_server_addresses"]:
-                new_values.append(str(ip))
-            values["ipv4_dhcp_server_addresses"] = new_values
-        if values["ipv6_dhcp_server_addresses"]:
-            new_values = []
-            for ip in values["ipv6_dhcp_server_addresses"]:
-                new_values.append(str(ip))
-            values["ipv6_dhcp_server_addresses"] = new_values
-        if values["ipv6_dhcp_mcast_server_addresses"]:
-            new_values = []
-            for ip in values["ipv6_dhcp_mcast_server_addresses"]:
-                new_values.append(str(ip))
-            values["ipv6_dhcp_mcast_server_addresses"] = new_values
-        return values
+    @model_validator(mode="after")
+    def convert_ip(self):
+        if self.ipv4_dhcp_server_addresses:
+            self.ipv4_dhcp_server_addresses = [
+                str(ip) for ip in self.ipv4_dhcp_server_addresses
+            ]
+        if self.ipv6_dhcp_server_addresses:
+            self.ipv6_dhcp_server_addresses = [
+                str(ip) for ip in self.ipv6_dhcp_server_addresses
+            ]
+        if self.ipv6_dhcp_mcast_server_addresses:
+            self.ipv6_dhcp_mcast_server_addresses = [
+                str(ip) for ip in self.ipv6_dhcp_mcast_server_addresses
+            ]
+        return self
