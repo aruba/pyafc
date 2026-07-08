@@ -6,7 +6,7 @@ import asyncio
 import json
 import time
 from asyncio import run as aiorun
-from ipaddress import IPv4Address
+from ipaddress import AddressValueError, IPv4Address
 
 from pydantic import ValidationError
 
@@ -390,7 +390,7 @@ class Fabric(
                     sw_list = utils.get_switches_list_from_scope(device)
                     for sw in sw_list:
                         _extended_sw_list[sw] = role
-                except:
+                except AddressValueError:
                     _extended_sw_list[
                         switches.Switch.consolidate_ip(self.client, device)
                     ] = role  # noqa: E501

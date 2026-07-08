@@ -318,7 +318,7 @@ def consolidate_switches_list(client, devices_list: list) -> list:
                 for sw in sw_list:
                     sw_uuid = _get_uuid(client, sw)
                     switches_uuids.append(sw_uuid)
-            except:
+            except netaddr.AddrFormatError:
                 sw_uuid = _get_uuid(client, switch)
                 switches_uuids.append(sw_uuid)
         else:

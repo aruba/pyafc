@@ -623,10 +623,9 @@ class Switch:
                                 f"{_s.join(kwargs['switches'])}")
                     _status = True
                     _changed = True
-            elif (
-                isinstance(add_request.json()["result"], str)
-                and ("already" or "Unreachable")
-                in add_request.json()["result"]
+            elif isinstance(add_request.json()["result"], str) and (
+                "already" in add_request.json()["result"]
+                or "Unreachable" in add_request.json()["result"]
             ):
                 _message = self.__correlate_ips_issues(
                     add_request.json()["result"]
