@@ -18,6 +18,7 @@ from pyafc.fabric import (
     models,
     multi_fabrics,
     pvlan,
+    vlan,
     vsx,
     vxlan,
 )
@@ -29,6 +30,7 @@ class Fabric(
     evpn.EVPN,
     vsx.VSX,
     pvlan.PVLAN,
+    vlan.Vlan,
     multi_fabrics.MultiFabrics,
     vxlan.Vxlan,
     Internal,

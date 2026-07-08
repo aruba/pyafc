@@ -46,6 +46,20 @@ previously pinned `pydantic==1.10.12`.
 - **How to migrate:** upgrade the environment to Pydantic v2. If your own
   code calls `.dict()` on a `pyafc` model, switch to `.model_dump()`.
 
+### Added
+- `fabric`: new VLAN management on the fabric-wide VLAN table
+  (`fabrics/{fabric_uuid}/vlans`) through the `Vlan` mixin on the `Fabric`
+  class:
+  - `create_vlan` — create one or more VLANs (range syntax, e.g. `"10,20-30"`)
+    and assign them to one or more devices (by name or IP) or to a fabric
+    scope (`include_spine` / `exclude_spine`).
+  - `update_vlan` — assign VLAN(s) to additional devices and/or update their
+    attributes. Renaming an existing VLAN is AFC-version dependent and may be
+    a no-op on some releases; device assignment always applies.
+  - `delete_vlan` — delete VLAN(s) from the whole fabric, or unassign them
+    from specific devices only.
+  - `get_vlans` / `get_vlan` — read helpers.
+
 ### Security Fixes
 - Made TLS certificate verification configurable via the `verify` key with a
   secure default of `True`.

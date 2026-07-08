@@ -93,6 +93,24 @@ class VLANStretching(BaseModel):
     global_route_targets: list[GlobalRT]
 
 
+class VlanEntry(BaseModel):
+    vlan_id: str
+    vlan_name: str | None = None
+    strict_firewall_bypass_enabled: bool = True
+
+    @model_validator(mode="before")
+    @classmethod
+    def convert_vlan_id(cls, values):
+        if isinstance(values, dict) and values.get("vlan_id") is not None:
+            values["vlan_id"] = str(values["vlan_id"])
+        return values
+
+
+class VlanTable(BaseModel):
+    vlans: list[VlanEntry]
+    vlan_scope: dict
+
+
 class RemoteFabric(BaseModel):
     fabric_uuid: str
     border_leader_uuid: str

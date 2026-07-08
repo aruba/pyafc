@@ -52,6 +52,14 @@ fabric.pvlan module
    :undoc-members:
    :show-inheritance:
 
+fabric.vlan module
+------------------
+
+.. automodule:: fabric.vlan
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 fabric.vsx module
 -----------------
 
