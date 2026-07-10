@@ -74,6 +74,16 @@ class Dns(BaseModel):
         return values
 
 
+class Rfts(BaseModel):
+    name: str
+    description: str | None = None
+    remote_file_server_hostname: str
+    protocol: Literal["sftp", "scp"]
+    username: str
+    password: str | None = None
+    location: str | None = None
+
+
 class Checkpoint(BaseModel):
     name: str
     description: str = ""
