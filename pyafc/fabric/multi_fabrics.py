@@ -271,3 +271,25 @@ class MultiFabrics:
             _message = exc
 
         return _message, _status, _changed
+
+    def update_vlan_stretching(self, **kwargs: dict) -> tuple:
+        """update_vlan_stretching Ensure a VLAN stretching configuration.
+
+        AFC does not expose an in-place update endpoint for VLAN stretching
+        (the ``/evpn/multi_site`` resource only supports GET, POST and
+        DELETE). This method therefore (re)applies the stretching
+        configuration idempotently: if the VLAN is already stretched, no
+        change is made. To modify the route targets of an existing stretched
+        VLAN, delete it first and create it again.
+
+        Args:
+            stretched_vlans (str): VLANs to be stretched.
+            global_route_targets (list): List of Global RTs. Check examples.
+
+        Returns:
+            message: Message containing the action taken.
+            status: True if successful, otherwise False.
+            changed: True if a change was applied, otherwise False.
+
+        """
+        return self.create_vlan_stretching(**kwargs)

@@ -122,7 +122,7 @@ class Ntp:
                     "ntp_client_configurations",
                     data=json.dumps(data.model_dump()),
                 )
-                if add_request.status_code in utils.response_nok:
+                if add_request.status_code in utils.response_ok:
                     _message = (
                         f"Successfully configured NTP settings " f"{self.name}"
                     )
