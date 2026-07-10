@@ -22,6 +22,7 @@ from unittest import mock
 # pyafc.fabric.fabric, so importing a single fabric mixin first would
 # trigger a circular import).
 from pyafc.fabric import fabric  # noqa: F401
+from pyafc.common import exceptions, versioning
 from pyafc.fabric import models, vlan
 
 
@@ -64,6 +65,31 @@ class VlanFixture(vlan.Vlan):
     def __init__(self, client: FakeClient) -> None:
         self.client = client
         self.uuid = "fabric-uuid"
+
+
+class FakeUnsupportedClient:
+    """Simulates an AFC version where the VLAN API is not available (404)."""
+
+    base_url = "https://afc.example/api/"
+
+    def __init__(self) -> None:
+        self.calls: list = []
+
+    def get(self, uri: str) -> FakeResponse:
+        self.calls.append(("get", uri, None))
+        return FakeResponse(404, None)
+
+    def post(self, uri: str, data=None) -> FakeResponse:
+        self.calls.append(("post", uri, data))
+        return FakeResponse(404, None)
+
+    def patch(self, uri: str, data=None) -> FakeResponse:
+        self.calls.append(("patch", uri, data))
+        return FakeResponse(404, None)
+
+    def delete(self, uri: str) -> FakeResponse:
+        self.calls.append(("delete", uri, None))
+        return FakeResponse(404, None)
 
 
 class TestVlanRangeExpansion(unittest.TestCase):
@@ -123,7 +149,7 @@ class TestCreateVlan(unittest.TestCase):
         self.assertEqual(uri, "fabrics/fabric-uuid/vlans")
         body = json.loads(data)
         self.assertEqual(body["vlan_scope"], {"switch_uuids": ["sw-1", "sw-2"]})
-        self.assertEqual(body["vlans"][0]["vlan_id"], "10,20-21")
+        self.assertEqual(body["vlans"][0]["vlan_id"], "10,20,21")
         self.assertEqual(body["vlans"][0]["vlan_name"], "Prod")
 
     def test_create_with_fabric_scope(self):
@@ -157,6 +183,28 @@ class TestCreateVlan(unittest.TestCase):
             )
         self.assertFalse(status)
         self.assertIn("No matching device", message)
+
+    def test_create_existing_vlan_is_idempotent(self):
+        client = FakeClient([{"uuid": "vlan-10", "vlan_id": 10}])
+        fixture = VlanFixture(client)
+        message, status, changed = fixture.create_vlan(
+            vlan_id="10", fabric_scope="include_spine",
+        )
+        self.assertTrue(status)
+        self.assertFalse(changed)
+        self.assertIn("already exist", message)
+        self.assertFalse(any(call[0] == "post" for call in client.calls))
+
+    def test_create_only_creates_missing_vlans(self):
+        client = FakeClient([{"uuid": "vlan-10", "vlan_id": 10}])
+        fixture = VlanFixture(client)
+        message, status, changed = fixture.create_vlan(
+            vlan_id="10,11", fabric_scope="include_spine",
+        )
+        self.assertTrue(status)
+        self.assertTrue(changed)
+        body = json.loads(client.calls[-1][2])
+        self.assertEqual(body["vlans"][0]["vlan_id"], "11")
 
 
 class TestUpdateVlan(unittest.TestCase):
@@ -239,6 +287,43 @@ class TestDeleteVlan(unittest.TestCase):
         self.assertTrue(status)
         self.assertFalse(changed)
         self.assertIn("not found", message)
+
+
+class TestFeatureNotSupported(unittest.TestCase):
+    """The VLAN API returns 404 on AFC versions that do not support it."""
+
+    def setUp(self):
+        versioning._version_cache.clear()
+
+    def test_create_returns_clean_message(self):
+        fixture = VlanFixture(FakeUnsupportedClient())
+        message, status, changed = fixture.create_vlan(
+            vlan_id="10", fabric_scope="include_spine",
+        )
+        self.assertFalse(status)
+        self.assertFalse(changed)
+        self.assertIn("not supported", message)
+
+    def test_update_returns_clean_message(self):
+        fixture = VlanFixture(FakeUnsupportedClient())
+        message, status, changed = fixture.update_vlan(
+            vlan_id="10", switches=["Leaf-1"],
+        )
+        self.assertFalse(status)
+        self.assertFalse(changed)
+        self.assertIn("not supported", message)
+
+    def test_delete_returns_clean_message(self):
+        fixture = VlanFixture(FakeUnsupportedClient())
+        message, status, changed = fixture.delete_vlan(vlan_id="10")
+        self.assertFalse(status)
+        self.assertFalse(changed)
+        self.assertIn("not supported", message)
+
+    def test_get_vlans_raises_feature_not_supported(self):
+        fixture = VlanFixture(FakeUnsupportedClient())
+        with self.assertRaises(exceptions.FeatureNotSupported):
+            fixture.get_vlans()
 
 
 if __name__ == "__main__":

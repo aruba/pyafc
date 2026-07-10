@@ -38,6 +38,12 @@ class EndpointGroupUnknown(Exception):
     pass
 
 
+class FeatureNotSupported(Exception):
+    """Raised when a feature/API is not available on the running AFC version."""
+
+    pass
+
+
 class ServiceQualifierUnknown(Exception):
     pass
 

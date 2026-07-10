@@ -17,11 +17,15 @@ import json
 
 from pydantic import ValidationError
 
-from pyafc.common import utils
+from pyafc.common import exceptions, utils, versioning
 from pyafc.fabric import models
 
 
 class Vlan:
+
+    # Human-readable feature name used in 'not supported' messages.
+    _FEATURE = "VLAN management"
+
     def __init__(self) -> None:
         """__init__ Init Method."""
 
@@ -31,8 +35,13 @@ class Vlan:
         Returns:
             List of VLAN objects in JSON format.
 
+        Raises:
+            FeatureNotSupported: If the VLAN API is not available on the
+                running AFC version.
+
         """
         vlan_request = self.client.get(f"fabrics/{self.uuid}/vlans")
+        versioning.ensure_supported(vlan_request, self._FEATURE, self.client)
         return vlan_request.json()["result"]
 
     def get_vlan(self, vlan_id: int) -> dict | bool:
@@ -109,6 +118,11 @@ class Vlan:
                 switches=["10.149.2.10", "Leaf-1"],
             )
 
+        Note:
+            Idempotent: VLAN IDs that already exist on the Fabric are
+            skipped. If every requested VLAN already exists, no change is
+            made and ``changed`` is False.
+
         Returns:
             message: Message containing the action taken.
             status: True if successful, otherwise False.
@@ -144,8 +158,21 @@ class Vlan:
                     False,
                 )
 
+            # Idempotency: only create the VLAN IDs that do not exist yet.
+            wanted = self._expand_vlan_range(kwargs.get("vlan_id"))
+            existing_ids = {vlan["vlan_id"] for vlan in self.get_vlans()}
+            missing = [vid for vid in wanted if vid not in existing_ids]
+            if not missing:
+                return (
+                    f"VLAN(s) {kwargs.get('vlan_id')} already exist. "
+                    "No action taken",
+                    True,
+                    False,
+                )
+            missing_str = ",".join(str(vid) for vid in missing)
+
             vlan_entry = {
-                "vlan_id": kwargs.get("vlan_id"),
+                "vlan_id": missing_str,
                 "vlan_name": kwargs.get("vlan_name"),
             }
             if kwargs.get("strict_firewall_bypass_enabled") is not None:
@@ -158,13 +185,18 @@ class Vlan:
                 f"fabrics/{self.uuid}/vlans",
                 data=json.dumps(data.model_dump(exclude_none=True)),
             )
+            versioning.ensure_supported(
+                vlan_request, self._FEATURE, self.client,
+            )
             if vlan_request.status_code in utils.response_ok:
-                _message = f"Successfully created VLAN(s) {kwargs.get('vlan_id')}"
+                _message = f"Successfully created VLAN(s) {missing_str}"
                 _status = True
                 _changed = True
             else:
                 _message = vlan_request.json()["result"]
 
+        except exceptions.FeatureNotSupported as exc:
+            _message = str(exc)
         except ValidationError as exc:
             _message = f"An exception {exc} occurred"
         except Exception as exc:
@@ -254,6 +286,7 @@ class Vlan:
                 f"fabrics/{self.uuid}/vlans",
                 data=json.dumps(body),
             )
+            versioning.ensure_supported(vlan_request, self._FEATURE, self.client)
             if vlan_request.status_code in utils.response_ok:
                 _message = f"Successfully updated VLAN(s) {vlan_id}"
                 _status = True
@@ -261,6 +294,8 @@ class Vlan:
             else:
                 _message = vlan_request.json()["result"]
 
+        except exceptions.FeatureNotSupported as exc:
+            _message = str(exc)
         except Exception as exc:
             _message = f"An issue occured - {exc}. No action taken"
 
@@ -318,6 +353,7 @@ class Vlan:
                 uri_vlan += f"&switches={','.join(switch_uuids)}"
 
             vlan_request = self.client.delete(uri_vlan)
+            versioning.ensure_supported(vlan_request, self._FEATURE, self.client)
             if vlan_request.status_code in utils.response_ok:
                 if kwargs.get("switches"):
                     _message = (
@@ -331,6 +367,8 @@ class Vlan:
             else:
                 _message = vlan_request.json()["result"]
 
+        except exceptions.FeatureNotSupported as exc:
+            _message = str(exc)
         except Exception as exc:
             _message = f"An issue occured - {exc}. No action taken"
 
