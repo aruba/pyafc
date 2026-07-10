@@ -109,7 +109,9 @@ class Vlan:
                 the VLAN(s) are assigned.
             fabric_scope (str, optional): Alternative to switches. One of
                 'include_spine' or 'exclude_spine'.
-            strict_firewall_bypass_enabled (bool, optional): Defaults to True.
+            strict_firewall_bypass_enabled (bool, optional): Only sent when
+                explicitly provided. When omitted, AFC applies its own
+                default. Not supported by all AFC versions.
 
         Example:
             fabric_instance.create_vlan(

@@ -96,7 +96,7 @@ class VLANStretching(BaseModel):
 class VlanEntry(BaseModel):
     vlan_id: str
     vlan_name: str | None = None
-    strict_firewall_bypass_enabled: bool = True
+    strict_firewall_bypass_enabled: bool | None = None
 
     @model_validator(mode="before")
     @classmethod

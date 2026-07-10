@@ -116,7 +116,31 @@ class TestVlanModel(unittest.TestCase):
     def test_vlan_id_int_is_stringified(self):
         entry = models.VlanEntry(vlan_id=100)
         self.assertEqual(entry.vlan_id, "100")
-        self.assertTrue(entry.strict_firewall_bypass_enabled)
+        self.assertIsNone(entry.strict_firewall_bypass_enabled)
+
+    def test_strict_firewall_bypass_omitted_when_not_set(self):
+        table = models.VlanTable(
+            vlans=[{"vlan_id": 10, "vlan_name": "v10"}],
+            vlan_scope={"switch_uuids": ["sw-1"]},
+        )
+        dumped = table.model_dump(exclude_none=True)
+        self.assertNotIn(
+            "strict_firewall_bypass_enabled", dumped["vlans"][0],
+        )
+
+    def test_strict_firewall_bypass_kept_when_set(self):
+        table = models.VlanTable(
+            vlans=[{
+                "vlan_id": 10,
+                "vlan_name": "v10",
+                "strict_firewall_bypass_enabled": True,
+            }],
+            vlan_scope={"switch_uuids": ["sw-1"]},
+        )
+        dumped = table.model_dump(exclude_none=True)
+        self.assertTrue(
+            dumped["vlans"][0]["strict_firewall_bypass_enabled"],
+        )
 
     def test_vlan_table_coerces_entries(self):
         table = models.VlanTable(
