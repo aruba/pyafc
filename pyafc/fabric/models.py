@@ -48,6 +48,7 @@ class Vsx(BaseModel):
     system_mac_range: ResourcePool = None
     keepalive_ip_pool_range: ResourcePool = None
     keep_alive_interface_mode: str
+    keep_alive_vrf: str = None
 
     @model_validator(mode="before")
     @classmethod

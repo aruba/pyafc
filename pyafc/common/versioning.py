@@ -40,6 +40,52 @@ def get_software_version(client) -> str | None:
     return _version_cache[key]
 
 
+def _parse_version(version: str | None) -> tuple[int, ...] | None:
+    """Parse an AFC software version string into a comparable tuple.
+
+    Examples:
+        "7.3.0-15489" -> (7, 3, 0)
+        "7.2" -> (7, 2)
+
+    Returns None when the version cannot be parsed.
+    """
+    if not version:
+        return None
+    base = version.split("-")[0].split("+")[0]
+    parts: list[int] = []
+    for token in base.split("."):
+        digits = "".join(ch for ch in token if ch.isdigit())
+        if not digits:
+            break
+        parts.append(int(digits))
+    return tuple(parts) if parts else None
+
+
+def is_version_at_least(client, minimum: str) -> bool:
+    """Return True when the running AFC version is >= ``minimum``.
+
+    Args:
+        client: AFC client used to query the running software version.
+        minimum (str): Minimum version required, e.g. "7.3".
+
+    Returns:
+        bool: True if the running version is greater than or equal to
+        ``minimum``. When the running version cannot be determined, this
+        returns True (fail open) so a version-detection failure does not
+        block an otherwise valid request.
+    """
+    current = _parse_version(get_software_version(client))
+    target = _parse_version(minimum)
+    if target is None:
+        return True
+    if current is None:
+        return True
+    length = max(len(current), len(target))
+    current += (0,) * (length - len(current))
+    target += (0,) * (length - len(target))
+    return current >= target
+
+
 def not_supported_message(
     feature: str,
     client=None,
