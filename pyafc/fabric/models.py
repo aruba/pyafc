@@ -74,12 +74,12 @@ class L3LS(BaseModel):
 
 
 class EVPNSettings(BaseModel):
-    fabric_uuid: str
+    fabric_uuid: str | None = None
     arp_suppression: bool = False
-    local_svi: bool = False
-    local_mac: bool = False
-    vxlan_tunnel_bridging_mode: str = None
-    switch_uuids: list[str] = []
+    local_svi: bool | None = None
+    local_mac: bool | None = None
+    vxlan_tunnel_bridging_mode: str | None = None
+    switch_uuids: list[str] | None = None
 
 
 class GlobalRT(BaseModel):

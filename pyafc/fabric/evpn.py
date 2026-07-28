@@ -190,3 +190,128 @@ class EVPN:
             _message = f"Faced a ValidationError {exc}"
 
         return _message, _status, _changed
+
+    def get_evpn_settings(self) -> dict | bool:
+        """get_evpn_settings Get the global EVPN Settings of the Fabric.
+
+        Returns:
+            evpn settings data (dict): Global EVPN Settings of the Fabric,
+                or False if no settings are found for the Fabric.
+
+        """
+        settings_request = self.client.get("evpn/settings")
+        for settings in settings_request.json()["result"]:
+            if settings.get("fabric_uuid") == self.uuid:
+                return settings
+        return False
+
+    def update_evpn_settings(self, **kwargs: dict) -> tuple:
+        """update_evpn_settings Update the global EVPN Settings of the Fabric.
+
+        Args:
+            arp_suppression (bool): Enable or disable ARP suppression.
+            local_svi (bool, optional): Enable or disable local SVI.
+            local_mac (bool, optional): Enable or disable local MAC.
+            vxlan_tunnel_bridging_mode (str, optional): One of :
+                - 'ibgp-ebgp'
+                - 'no-bridging'
+            switches (list, optional): List of switches on which to apply the
+                settings. If not specified, settings apply to the whole Fabric.
+
+        Example:
+            fabric_instance.update_evpn_settings(
+                arp_suppression=True,
+                local_svi=True,
+                local_mac=True,
+                vxlan_tunnel_bridging_mode='ibgp-ebgp',
+            )
+
+        Returns:
+            message (str): Action message.
+            status (bool): Status of the action, true or false.
+            changed (bool): Set to true if action has changed something.
+
+        """
+        _status = False
+        _changed = False
+        _message = ""
+
+        try:
+            current_settings = self.get_evpn_settings()
+            if not current_settings:
+                _message = (
+                    f"EVPN Settings not found for fabric {self.name}. "
+                    "No action taken."
+                )
+                return _message, _status, _changed
+
+            if kwargs.get("switches"):
+                kwargs["switch_uuids"] = utils.consolidate_switches_list(
+                    self.client,
+                    kwargs["switches"],
+                )
+                del kwargs["switches"]
+
+            comparable_fields = [
+                "arp_suppression",
+                "local_svi",
+                "local_mac",
+                "vxlan_tunnel_bridging_mode",
+            ]
+            change_required = any(
+                field in kwargs
+                and kwargs[field] != current_settings.get(field)
+                for field in comparable_fields
+            )
+
+            if not change_required and not kwargs.get("switch_uuids"):
+                _message = (
+                    f"EVPN Settings for fabric {self.name} are already "
+                    "up to date. No action taken."
+                )
+                _status = True
+                return _message, _status, _changed
+
+            model_kwargs = {
+                "arp_suppression": kwargs.get(
+                    "arp_suppression",
+                    current_settings.get("arp_suppression", False),
+                ),
+                "local_svi": kwargs.get(
+                    "local_svi",
+                    current_settings.get("local_svi"),
+                ),
+                "local_mac": kwargs.get(
+                    "local_mac",
+                    current_settings.get("local_mac"),
+                ),
+                "vxlan_tunnel_bridging_mode": kwargs.get(
+                    "vxlan_tunnel_bridging_mode",
+                    current_settings.get("vxlan_tunnel_bridging_mode"),
+                ),
+            }
+            # AFC requires exactly one of 'switch_uuids' (per-switch) or
+            # 'fabric_uuid' (fabric-wide) - never both.
+            if kwargs.get("switch_uuids"):
+                model_kwargs["switch_uuids"] = kwargs["switch_uuids"]
+            else:
+                model_kwargs["fabric_uuid"] = self.uuid
+
+            data = models.EVPNSettings(**model_kwargs)
+            update_request = self.client.put(
+                "evpn/settings",
+                data=json.dumps(data.model_dump(exclude_none=True)),
+            )
+            if update_request.status_code in utils.response_ok:
+                _message = (
+                    f"Successfully updated EVPN Settings for fabric "
+                    f"{self.name}"
+                )
+                _status = True
+                _changed = True
+            else:
+                _message = update_request.json()["result"]
+        except ValidationError as exc:
+            _message = f"Faced a ValidationError {exc}"
+
+        return _message, _status, _changed
