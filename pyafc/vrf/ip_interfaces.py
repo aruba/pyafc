@@ -288,7 +288,7 @@ class IPInterface:
                         kwargs["switch_uuid"] = switch
                         data = models.IPInterface(**kwargs)
                         ip_interfaces_array.append(
-                            data.dict(exclude_none=True)
+                            data.model_dump(exclude_none=True)
                         )
                 except IndexError:
                     _message = "Not enough interfaces for IPv4 Primary"

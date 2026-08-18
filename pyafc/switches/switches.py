@@ -20,9 +20,8 @@ from __future__ import annotations
 import asyncio
 import json
 import re
-import sys
 import time
-from ipaddress import IPv4Address
+from ipaddress import AddressValueError, IPv4Address
 from typing import TYPE_CHECKING
 
 from pydantic import ValidationError
@@ -33,8 +32,6 @@ from pyafc.switches import models
 
 if TYPE_CHECKING:
     from httpx import Client
-
-sys.tracebacklimit = 0
 
 
 class Switch:
@@ -82,7 +79,7 @@ class Switch:
         )
         if (
             switch_request.json()["result"]
-            and switch_request.status_code != utils.response_nok
+            and switch_request.status_code not in utils.response_nok
         ):
             for item, value in switch_request.json()["result"][0].items():
                 setattr(self, item, value)
@@ -98,7 +95,7 @@ class Switch:
         """
         try:
             self.ipaddress = IPv4Address(device)
-        except:  # noqa: E722
+        except AddressValueError:
             self.name = device
 
     def get_switch_details(self) -> dict:
@@ -138,8 +135,8 @@ class Switch:
 
         """
         try:
-            ipaddress = IPv4Address(switch)
-        except ipaddress.AddressValueError:
+            IPv4Address(switch)
+        except AddressValueError:
             error_msg = "IP Addresses are missing"
             raise exceptions.NotIPv4Address(
                 error_msg,
@@ -165,12 +162,15 @@ class Switch:
         switch_ip = None
         try:
             switch_ip = IPv4Address(device)
-        except:
+        except AddressValueError:
             switch_request = client.get("switches")
             for switch in switch_request.json()["result"]:
                 if switch["name"] == device:
                     switch_ip = switch["ip_address"]
+                    break
 
+        if switch_ip is None:
+            return False
         return str(switch_ip)
 
     @staticmethod
@@ -286,7 +286,7 @@ class Switch:
             uri_reboot = "/switches/reboot"
             reboot_request = client.put(
                 uri_reboot,
-                data=json.dumps(data.dict()),
+                data=json.dumps(data.model_dump()),
             )
             if reboot_request.status_code in utils.response_ok:
                 _message = "Successfully rebooted devices"
@@ -347,7 +347,7 @@ class Switch:
         uri_reconcile = "/switches/reconcile"
         reconcile_request = client.put(
             uri_reconcile,
-            data=json.dumps(data.dict()),
+            data=json.dumps(data.model_dump()),
         )
 
         if reconcile_request.status_code in utils.response_ok:
@@ -411,7 +411,7 @@ class Switch:
         uri_save_config = "/switches/save_config"
         save_config_request = client.put(
             uri_save_config,
-            data=json.dumps(data.dict()),
+            data=json.dumps(data.model_dump()),
         )
         if save_config_request.status_code in utils.response_ok:
             _message = "Successfully saved configuration"
@@ -437,7 +437,7 @@ class Switch:
         _changed = False
 
         try:
-            data = models.Switch(**data).dict(exclude_none=True)
+            data = models.Switch(**data).model_dump(exclude_none=True)
         except ValidationError:
             _message = "Some attributes or values are not as expected"
             return _message, _status, _changed
@@ -508,7 +508,7 @@ class Switch:
             data = models.SwitchDiscovery(switches=[self.ipaddress], **kwargs)
             add_request = self.client.post(
                 "switches/discover",
-                data=json.dumps(data.dict(exclude_none=True)),
+                data=json.dumps(data.model_dump(exclude_none=True)),
             )
             if add_request.status_code in utils.response_ok:
                 switch_details = self.get_switch_details()
@@ -610,7 +610,7 @@ class Switch:
 
             add_request = self.client.post(
                 "switches/discover",
-                data=json.dumps(data.dict(exclude_none=True)),
+                data=json.dumps(data.model_dump(exclude_none=True)),
             )
 
             if add_request.status_code in utils.response_ok:
@@ -623,10 +623,9 @@ class Switch:
                                 f"{_s.join(kwargs['switches'])}")
                     _status = True
                     _changed = True
-            elif (
-                isinstance(add_request.json()["result"], str)
-                and ("already" or "Unreachable")
-                in add_request.json()["result"]
+            elif isinstance(add_request.json()["result"], str) and (
+                "already" in add_request.json()["result"]
+                or "Unreachable" in add_request.json()["result"]
             ):
                 _message = self.__correlate_ips_issues(
                     add_request.json()["result"]

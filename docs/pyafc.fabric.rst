@@ -52,6 +52,14 @@ pyafc.fabric.pvlan module
    :undoc-members:
    :show-inheritance:
 
+pyafc.fabric.vlan module
+------------------------
+
+.. automodule:: pyafc.fabric.vlan
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 pyafc.fabric.vsx module
 -----------------------
 

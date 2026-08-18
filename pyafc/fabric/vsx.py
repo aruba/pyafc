@@ -6,12 +6,10 @@ import time
 
 from pydantic import ValidationError
 
-from pyafc.common import utils
+from pyafc.common import utils, versioning
 from pyafc.common.internal import Internal
 from pyafc.fabric import models
 from pyafc.services import resource_pools
-
-
 class VSX(Internal):
 
     def __init__(self) -> None:
@@ -86,7 +84,13 @@ class VSX(Internal):
             keep_alive_interface_mode (str, optional): One of:
                 - 'routed'
                 - 'loopback'
-                Defaults to 'routed'
+                - 'management_interface'
+                Defaults to 'routed'.
+                'management_interface' (keep alive over the management VRF)
+                is only available from AFC version 7.3 onwards.
+            keep_alive_vrf (str, optional): Name of the VRF used for the
+                keep alive interface (e.g. 'mgmt'). Using the management
+                ('mgmt') VRF is only available from AFC version 7.3 onwards.
 
         Example:
             fabric_instance.create_vsx(name="Sense_VSX",
@@ -110,6 +114,27 @@ class VSX(Internal):
                 _message = "Fabric does not exist. No action taken"
                 return _message, _status, _changed
 
+            # The public API uses "name"; the automation payload expects
+            # "name_prefix". Keep both callers (workflow and Ansible module)
+            # working by mapping one onto the other.
+            if kwargs.get("name") and not kwargs.get("name_prefix"):
+                kwargs["name_prefix"] = kwargs["name"]
+
+            uses_mgmt_vrf = (
+                kwargs.get("keep_alive_interface_mode")
+                == "management_interface"
+                or str(kwargs.get("keep_alive_vrf", "")).lower() == "mgmt"
+            )
+            if uses_mgmt_vrf and not versioning.is_version_at_least(
+                self.client, "7.3",
+            ):
+                _message = (
+                    "Using the management (mgmt) VRF for the VSX keep alive "
+                    "interface is only available from AFC version 7.3 "
+                    "onwards. No action taken."
+                )
+                return _message, _status, _changed
+
             mac_pool = resource_pools.Pool.get_resource_pool(
                 self.client, kwargs["system_mac_range"], "MAC",
             )
@@ -118,22 +143,27 @@ class VSX(Internal):
                 return _message, _status, _changed
             kwargs["system_mac_range"] = mac_pool["uuid"]
 
-            ipv4_pool = resource_pools.Pool.get_resource_pool(
-                self.client, kwargs["keepalive_ip_pool_range"], "IPv4",
-            )
-            if not ipv4_pool:
-                _message = (
-                    f'{kwargs["keepalive_ip_pool_range"]} does not exist'
+            if kwargs.get("keepalive_ip_pool_range"):
+                ipv4_pool = resource_pools.Pool.get_resource_pool(
+                    self.client, kwargs["keepalive_ip_pool_range"], "IPv4",
                 )
-                return _message, _status, _changed
-            kwargs["keepalive_ip_pool_range"] = ipv4_pool["uuid"]
+                if not ipv4_pool:
+                    _message = (
+                        f'{kwargs["keepalive_ip_pool_range"]} does not exist'
+                    )
+                    return _message, _status, _changed
+                kwargs["keepalive_ip_pool_range"] = ipv4_pool["uuid"]
 
             data = models.Vsx(**kwargs)
-            data = data.dict(exclude_none=True)
+            data = data.model_dump(exclude_none=True)
 
             existing_vsx = self.get_vsx()
 
-            if len(existing_vsx) != 0 and kwargs["name"] in existing_vsx[0]["name"]:
+            vsx_name = kwargs.get("name_prefix") or kwargs.get("name")
+            if (
+                len(existing_vsx) != 0
+                and vsx_name in existing_vsx[0]["name"]
+            ):
                 _message = (
                     "The VSX configuration already exists. No action taken"
                 )

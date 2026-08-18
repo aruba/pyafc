@@ -6,7 +6,7 @@ import asyncio
 import json
 import time
 from asyncio import run as aiorun
-from ipaddress import IPv4Address
+from ipaddress import AddressValueError, IPv4Address
 
 from pydantic import ValidationError
 
@@ -18,6 +18,7 @@ from pyafc.fabric import (
     models,
     multi_fabrics,
     pvlan,
+    vlan,
     vsx,
     vxlan,
 )
@@ -29,6 +30,7 @@ class Fabric(
     evpn.EVPN,
     vsx.VSX,
     pvlan.PVLAN,
+    vlan.Vlan,
     multi_fabrics.MultiFabrics,
     vxlan.Vxlan,
     Internal,
@@ -109,7 +111,7 @@ class Fabric(
                 data = models.Fabric(name=name, **kwargs)
                 fabric_request = self.client.post(
                     "fabrics",
-                    data=json.dumps(data.dict(exclude_none=True)),
+                    data=json.dumps(data.model_dump(exclude_none=True)),
                 )
                 if fabric_request.status_code in utils.response_ok:
                     if self.__instantiate_details():
@@ -390,7 +392,7 @@ class Fabric(
                     sw_list = utils.get_switches_list_from_scope(device)
                     for sw in sw_list:
                         _extended_sw_list[sw] = role
-                except:
+                except AddressValueError:
                     _extended_sw_list[
                         switches.Switch.consolidate_ip(self.client, device)
                     ] = role  # noqa: E501

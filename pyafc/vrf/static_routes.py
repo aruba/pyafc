@@ -73,7 +73,7 @@ class StaticRoute:
             uri_static_route = f"vrfs/{self.uuid}/ip_static_routes"
             static_route_request = self.client.post(
                 uri_static_route,
-                data=json.dumps([data.dict(exclude_none=True)]),
+                data=json.dumps([data.model_dump(exclude_none=True)]),
             )
             if static_route_request.status_code in utils.response_ok:
                 _message = "Successfully created static route as per inputs"

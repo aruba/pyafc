@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-from pyafc.common import utils
+from pyafc.common import exceptions, utils, versioning
 from pyafc.route_policies import models
 
 
@@ -125,7 +125,7 @@ class CommunityList:
 
                 add_request = self.client.post(
                     "community_lists",
-                    data=json.dumps(data.dict(exclude_none=True)),
+                    data=json.dumps(data.model_dump(exclude_none=True)),
                 )
                 if add_request.status_code in utils.response_ok:
                     _message = (
@@ -203,7 +203,12 @@ class CommunityList:
 
             add_request = self.client.post(
                 f"community_lists/{self.uuid}/community_lists_entries",
-                data=json.dumps(data.dict(exclude_none=True)),
+                data=json.dumps(data.model_dump(exclude_none=True)),
+            )
+            versioning.ensure_supported(
+                add_request,
+                "Community list entry management",
+                self.client,
             )
             if add_request.status_code in utils.response_ok:
                 _message = (
@@ -214,6 +219,8 @@ class CommunityList:
             else:
                 _message = add_request.json()["result"]
 
+        except exceptions.FeatureNotSupported as exc:
+            _message = str(exc)
         except Exception as exc:
             _message = (f"An exception {exc} occurred while adding "
                         "community list entry")

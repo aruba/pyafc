@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-from pyafc.common import utils
+from pyafc.common import exceptions, utils, versioning
 from pyafc.route_policies import models
 
 
@@ -128,7 +128,7 @@ class RouteMap:
 
                 add_request = self.client.post(
                     "route_maps",
-                    data=json.dumps(data.dict(exclude_none=True)),
+                    data=json.dumps(data.model_dump(exclude_none=True)),
                 )
                 if add_request.status_code in utils.response_ok:
                     _message = f"Successfully created route map {self.name}"
@@ -254,7 +254,12 @@ class RouteMap:
 
             add_request = self.client.post(
                 f"route_maps/{self.uuid}/route_map_entries",
-                data=json.dumps(data.dict(exclude_none=True)),
+                data=json.dumps(data.model_dump(exclude_none=True)),
+            )
+            versioning.ensure_supported(
+                add_request,
+                "Route map entry management",
+                self.client,
             )
             if add_request.status_code in utils.response_ok:
                 _message = "Successfully added route map entry"
@@ -263,6 +268,8 @@ class RouteMap:
             else:
                 _message = add_request.json()["result"]
 
+        except exceptions.FeatureNotSupported as exc:
+            _message = str(exc)
         except Exception as exc:
             _message = (f"An exception {exc} occurred while adding route map "
                         f"entry to {self.name}")

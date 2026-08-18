@@ -1,9 +1,9 @@
 # (C) Copyright 2020-2025 Hewlett Packard Enterprise Development LP.
 # Apache License 2.0
 
-from typing import List, Literal
+from typing import Literal
 
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel, model_validator
 
 """Models file is used to create a dictionary."""
 
@@ -12,13 +12,14 @@ class PsmRule(BaseModel):
     name: str
     description: str = ""
     type: Literal["layer3", "layer2"] = "layer3"
-    source_endpoint_groups: List[str] = []
-    destination_endpoint_groups: List[str] = []
-    service_qualifiers: List[str] = []
-    applications: List[str] = []
+    source_endpoint_groups: list[str] = []
+    destination_endpoint_groups: list[str] = []
+    service_qualifiers: list[str] = []
+    applications: list[str] = []
     action: Literal["allow", "drop"] = "allow"
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def convert_int_to_str(cls, values):
         if values.get("rule_type"):
             values["type"] = values["rule_type"]
@@ -40,12 +41,13 @@ class PsmPolicies(BaseModel):
     description: str = ""
     policy_subtype: Literal["layer3", "layer2", "firewall"] = "firewall"
     priority: int = 1
-    rules: List[str] = []
-    rules_disabled: List[str] = []
-    enforcers: List[PolicyEnforcer] = []
+    rules: list[str] = []
+    rules_disabled: list[str] = []
+    enforcers: list[PolicyEnforcer] = []
     object_type: str = "policy"
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def convert_int_to_str(cls, values):
         if values.get("eg_type"):
             values["type"] = values["eg_type"]
@@ -74,9 +76,10 @@ class PsmEndpointGroups(BaseModel):
     description: str = ""
     type: Literal["layer3", "layer2", "firewall"] = "firewall"
     sub_type: Literal["ip_collection", "ip_address"] = "ip_address"
-    endpoints: List[Endpoints] = []
+    endpoints: list[Endpoints] = []
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def convert_int_to_str(cls, values):
         if values.get("eg_type"):
             values["type"] = values["eg_type"]
@@ -92,7 +95,8 @@ class Qualifier(BaseModel):
     dst_port: str = None
     ip_protocol: str = None
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def convert_int_to_str(cls, values):
         if values.get("src_port"):
             values["src_port"] = str(values["src_port"])
@@ -107,7 +111,7 @@ class PsmQualifiers(BaseModel):
     name: str
     description: str = ""
     qualifier_type: Literal["layer3"] = "layer3"
-    protocol_identifier: List[Qualifier] = []
+    protocol_identifier: list[Qualifier] = []
 
 
 class Icmp(BaseModel):
@@ -145,7 +149,8 @@ class Alg(BaseModel):
     sunrpc: SunRPC = None
     msrpc: Msrpc = None
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def native_integration(cls, values):
         if values["type"] == "ftp" and not values.get("ftp"):
             values["ftp"] = Ftp()
@@ -157,14 +162,14 @@ class Alg(BaseModel):
 class PsmApplications(BaseModel):
     name: str
     description: str = ""
-    qualifier_uuids: List[str] = []
+    qualifier_uuids: list[str] = []
     alg: Alg = None
 
 
 class VnicMove(BaseModel):
-    vnic_uuids: List[str]
+    vnic_uuids: list[str]
     portgroup_uuid: str
 
 
 class MoveVnic(BaseModel):
-    vnics: List[VnicMove]
+    vnics: list[VnicMove]

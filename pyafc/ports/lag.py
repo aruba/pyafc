@@ -134,12 +134,12 @@ class Lag:
                     if data.get("speed_config"):
                         port_properties["speed"] = data["speed_config"]
                     port_properties = models.PortProperties(**port_properties)
-                    data["port_properties"].append(port_properties.dict())
+                    data["port_properties"].append(port_properties.model_dump())
 
             data = data | data["global_config"]
             data = models.LAG(**data)
 
-            lag_request = client.post("lags", data=json.dumps(data.dict()))
+            lag_request = client.post("lags", data=json.dumps(data.model_dump()))
             if lag_request.status_code in utils.response_ok:
                 _message = "Successfully configured LAG as per the input"
                 _status = True

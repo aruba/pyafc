@@ -5,9 +5,9 @@
 
 from __future__ import annotations
 
-from typing import List, Literal
+from typing import Literal
 
-from pydantic import BaseModel, Field, root_validator
+from pydantic import BaseModel, Field, model_validator
 
 
 class ResourcePool(BaseModel):
@@ -53,7 +53,7 @@ class RouteTargets(BaseModel):
     """
 
     primary_route_target: RouteTarget
-    secondary_route_targets: List[RouteTarget] = []
+    secondary_route_targets: list[RouteTarget] = []
 
 
 class VRF(BaseModel):
@@ -70,7 +70,7 @@ class VRF(BaseModel):
     name: str
     fabric_uuid: str
     vni: int = None
-    switch_uuids: List[str] = []
+    switch_uuids: list[str] = []
     route_target: RouteTargets = {}
     route_distinguisher: str = "loopback1:1"
     max_cps_mode: str = "unlimited"
@@ -163,7 +163,8 @@ class BGPUpdate(BaseModel):
     always_compare_med: bool = True
     maximum_paths: int = 8
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def convert_values(cls, values: dict) -> dict:
         """check_redistribute_rm Convert values to expected ones.
 
@@ -211,7 +212,8 @@ class BGPUpdateSwitch(BaseModel):
     networks: list = []
     neighbors: list = []
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def convert_values(cls, values: dict) -> dict:
         """check_redistribute_rm Convert values to expected ones.
 
@@ -259,7 +261,8 @@ class BGPConfig(BaseModel):
     networks: list = []
     neighbors: list = []
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def convert_values(cls, values: dict) -> dict:
         """check_redistribute_rm Convert values to expected ones.
 
@@ -360,7 +363,8 @@ class Bgp(BaseModel):
     allowas_in: bool = True
     auth_password: str = None
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def check_values(cls, values: dict) -> dict:
         """check_redistribute_rm Convert values to expected ones.
 
@@ -398,7 +402,8 @@ class Underlay(BaseModel):
     ospf: Ospf = None
     bgp: Bgp = None
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def convert_values(cls, values: dict) -> dict:
         """check_redistribute_rm Convert values to expected ones.
 
@@ -499,7 +504,8 @@ class Overlay(BaseModel):
     keepalive_timer: int = 60
     holddown_timer: int = 180
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def convert_values(cls, values: dict) -> dict:
         """check_redistribute_rm Convert values to expected ones.
 
@@ -565,7 +571,7 @@ class Network(BaseModel):
     max_cps_mode: Literal["enabled", "disabled", "unlimited"] | None = "disabled"
     max_cps: int | None = Field(default=None, gt=1000, lt=1000000)
     max_sessions_mode: Literal["enabled", "disabled", "unlimited"] | None = "disabled"
-    max_sessions: int | None = Field(gt=10000, lt=5000000)
+    max_sessions: int | None = Field(default=None, gt=10000, lt=5000000)
     connection_tracking_mode: bool | None = None
     allow_session_reuse: bool | None = None
     service_bypass: bool | None = False
@@ -628,7 +634,8 @@ class IPInterface(BaseModel):
     ipv4_secondary_addresses: IPAddress = []
     local_proxy_arp_enabled: bool = False
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def convert_values(cls, values: dict) -> dict:
         """convert_values Convert values to expected ones.
 
@@ -709,7 +716,7 @@ class OspfRouter(BaseModel):
 
     name_prefix: str
     description: str = ""
-    switch_uuids: List[str]
+    switch_uuids: list[str]
     enable: bool = True
     id: int = 1
     redistribute: OspfRedistribute = None
@@ -726,24 +733,20 @@ class OspfRouter(BaseModel):
     default_metric: int | None = None
     default_information: Literal["disable", "originate", "always_originate"] | None = "disable"
 
-    @root_validator(skip_on_failure=True)
-    def check_redistribute_rm(cls, values: dict) -> dict:
+    @model_validator(mode="after")
+    def check_redistribute_rm(self) -> "OspfRouter":
         """check_redistribute_rm Check if Restribution Route Map is present.
 
         Args:
-            cls: Initial instanciation.
-            values: Initial values.
+            self: The validated model instance.
 
         Returns:
-            values: Returned values.
+            self: The validated model instance.
 
         """
-        if not values["redistribute_route_map"]:
-            values["redistribute_route_map"] = {
-                "redistribute_connected_route_map": "",
-                "redistribute_local_route_map": "",
-            }
-        return values
+        if not self.redistribute_route_map:
+            self.redistribute_route_map = OspfRedistributeRouteMap()
+        return self
 
 
 class OspfArea(BaseModel):
@@ -788,7 +791,7 @@ class OspfInterface(BaseModel):
     ignore_mtu_mismatch: bool = False
     passive_mode: bool = False
     authentication_value: str = ""
-    md5_list: List[str] = []
+    md5_list: list[str] = []
     authentication_type: Literal["simple-text", "message-digest"] = "null"
     network_type: Literal[
         "ospf_iftype_pointopoint",
@@ -813,7 +816,8 @@ class NetworkAddress(BaseModel):
     address: str
     prefix_length: int
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def convert_values(cls, values: dict) -> dict:
         """check_redistribute_rm Convert values to expected ones.
 
@@ -847,7 +851,7 @@ class StaticRoute(BaseModel):
     description: str = ""
     distance: int | None = Field(default=None, gt=0, lt=256)
     tag: int | None = Field(default=None, gt=0, lt=4294967295)
-    switch_uuids: List[str]
+    switch_uuids: list[str]
     type: Literal["forward", "nullroute"] | None = "forward"
 
 
@@ -891,7 +895,7 @@ class BgpNeighbor(BaseModel):
     keepalive_timer: int = 60
     holddown_timer: int = 180
     neighbor_type: Literal["ibgp", "ebgp"] = None
-    address_families: List[Literal["evpn", "ipv4", "ipv6", "vpnv4"]]
+    address_families: list[Literal["evpn", "ipv4", "ipv6", "vpnv4"]]
     external_bgp_multihop: int = None
     update_source_address: str = None
     update_source_interface: str = None
@@ -924,7 +928,7 @@ class BgpConfig(BaseModel):
     switch_uuid: str
     name: str
     description: str = ""
-    networks: List[BgpNetwork] = []
+    networks: list[BgpNetwork] = []
     redistribute_static: bool = False
     redistribute_ospf: bool = False
     redistribute_connected: bool = True
@@ -939,16 +943,17 @@ class BgpConfig(BaseModel):
     router_id: str
     keepalive_timer: int = 60
     holddown_timer: int = 180
-    neighbors: List[BgpNeighbor] = []
+    neighbors: list[BgpNeighbor] = []
     as_number: str
     maximum_paths: int = 8
     redistribute_connected_route_map: str = ""
     redistribute_ospf_route_map: str = None
     redistribute_local_route_map: str = None
     redistribute_static_route_map: str = None
-    redistribute_ospf_process_route_map: List[OspfProcessRedistributeRouteMap] = []
+    redistribute_ospf_process_route_map: list[OspfProcessRedistributeRouteMap] = []
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def convert_values(cls, values: dict) -> dict:
         """check_redistribute_rm Convert values to expected ones.
 
@@ -967,4 +972,4 @@ class BgpConfig(BaseModel):
 
 class BgpSwitchConfigList(BaseModel):
 
-    switches: List[BgpConfig]
+    switches: list[BgpConfig]

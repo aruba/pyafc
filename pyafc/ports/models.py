@@ -1,9 +1,9 @@
 # (C) Copyright 2020-2025 Hewlett Packard Enterprise Development LP.
 # Apache License 2.0
 
-from typing import List, Literal
+from typing import Literal
 
-from pydantic import BaseModel, Field, root_validator
+from pydantic import BaseModel, Field, model_validator
 
 """Models file is used to create a dictionary that is later used."""
 
@@ -21,7 +21,7 @@ class Speed(BaseModel):
 
 class PortProperties(BaseModel):
     lacp: LACP = Field(default_factory=LACP)
-    port_uuids: List[str]
+    port_uuids: list[str]
     speed: Speed = Field(default_factory=Speed)
     switch_uuid: str = None
 
@@ -41,7 +41,8 @@ class LAG(BaseModel):
     vlan_mode: str = "null"
     status: str = "null"
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def check_ports(cls, values):
         if not values["port_properties"]:
             raise ValueError("Specified ports do not exist")
@@ -50,7 +51,7 @@ class LAG(BaseModel):
 
 class InternalLAG(BaseModel):
     name: str
-    port_properties: List[PortProperties]
+    port_properties: list[PortProperties]
     type: str = "internal"
     fabric_uuid: str = None
     mlag: bool = False

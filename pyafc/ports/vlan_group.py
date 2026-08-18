@@ -64,7 +64,7 @@ class VlanGroup:
                 uri_vlan_groups = "vlan_groups"
                 vlan_groups_request = self.client.post(
                     uri_vlan_groups,
-                    data=json.dumps(data.dict()),
+                    data=json.dumps(data.model_dump()),
                 )
                 if vlan_groups_request.status_code in utils.response_ok:
                     _message = "Successfully created VLAN Group"

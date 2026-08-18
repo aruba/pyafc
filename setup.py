@@ -33,7 +33,7 @@ setup(
         "netaddr",
         "requests_toolbelt",
         "wheel",
-        "pydantic==1.10.12",
+        "pydantic>=2,<3",
         "httpx"
     ],
     zip_safe=False,

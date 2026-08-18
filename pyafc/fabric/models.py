@@ -1,9 +1,9 @@
 # (C) Copyright 2020-2025 Hewlett Packard Enterprise Development LP.
 # Apache License 2.0
 
-from typing import List, Literal
+from typing import Literal
 
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel, model_validator
 
 """Models file is used to create a dictionary that is later used."""
 
@@ -21,7 +21,7 @@ class Fabric(BaseModel):
 class EVPN(BaseModel):
     fabric_uuid: str
     name_prefix: str = "NEW EVPN"
-    switch_uuids: List[str] = []
+    switch_uuids: list[str] = []
     description: str = ""
     as_number: str = None
     rt_type: Literal["AUTO", "ASN:VNI", "ASN:VLAN", "ASN:NN"] = "AUTO"
@@ -29,7 +29,8 @@ class EVPN(BaseModel):
     vlans: str
     vni_base: int
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def convert_values(cls, values):
         new_values = values.copy()
         if values.get("name"):
@@ -47,8 +48,10 @@ class Vsx(BaseModel):
     system_mac_range: ResourcePool = None
     keepalive_ip_pool_range: ResourcePool = None
     keep_alive_interface_mode: str
+    keep_alive_vrf: str = None
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def convert_pools(cls, values):
         new_values = values.copy()
         if values.get("system_mac_range"):
@@ -72,12 +75,12 @@ class L3LS(BaseModel):
 
 
 class EVPNSettings(BaseModel):
-    fabric_uuid: str
+    fabric_uuid: str | None = None
     arp_suppression: bool = False
-    local_svi: bool = False
-    local_mac: bool = False
-    vxlan_tunnel_bridging_mode: str = None
-    switch_uuids: List[str] = []
+    local_svi: bool | None = None
+    local_mac: bool | None = None
+    vxlan_tunnel_bridging_mode: str | None = None
+    switch_uuids: list[str] | None = None
 
 
 class GlobalRT(BaseModel):
@@ -86,9 +89,27 @@ class GlobalRT(BaseModel):
 
 
 class VLANStretching(BaseModel):
-    fabric_uuids: List[str]
+    fabric_uuids: list[str]
     stretched_vlans: str
-    global_route_targets: List[GlobalRT]
+    global_route_targets: list[GlobalRT]
+
+
+class VlanEntry(BaseModel):
+    vlan_id: str
+    vlan_name: str | None = None
+    strict_firewall_bypass_enabled: bool | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def convert_vlan_id(cls, values):
+        if isinstance(values, dict) and values.get("vlan_id") is not None:
+            values["vlan_id"] = str(values["vlan_id"])
+        return values
+
+
+class VlanTable(BaseModel):
+    vlans: list[VlanEntry]
+    vlan_scope: dict
 
 
 class RemoteFabric(BaseModel):
@@ -102,7 +123,7 @@ class MultiFabrics(BaseModel):
     name: str
     description: str = ""
     border_leader: str
-    l3_ebgp_borders: List[str]
-    remote_fabrics: List[RemoteFabric]
+    l3_ebgp_borders: list[str]
+    remote_fabrics: list[RemoteFabric]
     bgp_auth_password: str = ""
     uplink_to_uplink: bool = None

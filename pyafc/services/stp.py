@@ -170,7 +170,7 @@ class STP:
                 data = models.Stp(name=self.name, **kwargs)
                 stp_request = self.client.post(
                     "spanning_tree/stp_configuration",
-                    data=json.dumps(data.dict(exclude_none=True)),
+                    data=json.dumps(data.model_dump(exclude_none=True)),
                 )
 
                 if stp_request.status_code in utils.response_ok:

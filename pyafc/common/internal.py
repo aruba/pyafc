@@ -1,17 +1,19 @@
 # (C) Copyright 2020-2025 Hewlett Packard Enterprise Development LP.
 # Apache License 2.0
 
-import sys
 from functools import wraps
+
+from pyafc.common import exceptions
 
 
 class Internal:
+    @staticmethod
     def afc_connected(function):
         @wraps(function)
         def backend_exec(self, *args, **kwargs):
-            if self.client:
-                function(*args, **kwargs)
-            else:
-                sys.exit(0)
+            if not self.client:
+                msg = "Not connected to AFC"
+                raise exceptions.AuthenticationIssue(msg)
+            return function(self, *args, **kwargs)
 
         return backend_exec

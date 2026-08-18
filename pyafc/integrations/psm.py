@@ -95,7 +95,7 @@ class Psm:
 
             psm_request = self.client.post(
                 "pensando/psms",
-                data=json.dumps(data.dict(exclude_none=True)),
+                data=json.dumps(data.model_dump(exclude_none=True)),
             )
 
             if psm_request.status_code in utils.response_ok:

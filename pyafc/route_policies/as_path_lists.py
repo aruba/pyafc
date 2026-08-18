@@ -122,7 +122,7 @@ class ASPathList:
 
                 add_request = self.client.post(
                     "aspath_lists",
-                    data=json.dumps(data.dict(exclude_none=True)),
+                    data=json.dumps(data.model_dump(exclude_none=True)),
                 )
                 if add_request.status_code in utils.response_ok:
                     _message = f"Successfully created the aspath {self.name}"
@@ -171,6 +171,6 @@ class ASPathList:
 
         except Exception as exc:
             _message = (f"An exception {exc} occurred while deleting "
-                        "ASPath {self.name}")
+                        f"ASPath {self.name}")
 
         return _message, _status, _changed

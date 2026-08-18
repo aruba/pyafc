@@ -152,7 +152,7 @@ class Checkpoint:
 
                 add_request = self.client.post(
                     "switches/checkpoint",
-                    data=json.dumps(data.dict()),
+                    data=json.dumps(data.model_dump()),
                 )
                 if add_request.status_code in utils.response_ok:
                     _message = (
@@ -199,7 +199,7 @@ class Checkpoint:
 
                 add_request = self.client.post(
                     "switches/checkpoint/schedules",
-                    data=json.dumps(data.dict(exclude_none=True)),
+                    data=json.dumps(data.model_dump(exclude_none=True)),
                 )
                 if add_request.status_code in utils.response_ok:
                     _message = (
@@ -269,7 +269,7 @@ class Checkpoint:
 
         add_request = self.client.post(
             "switches/checkpoint/rollback",
-            data=json.dumps(data.dict(exclude_none=True)),
+            data=json.dumps(data.model_dump(exclude_none=True)),
         )
         if add_request.status_code in utils.response_ok:
             _message = f"Successfully rolled back the checkpoint {self.name}"

@@ -85,7 +85,7 @@ class Vrf(
             if vrf["name"] == self.name:
                 for item, value in vrf.items():
                     setattr(self, item, value)
-                    return True
+                return True
         return False
 
     @staticmethod
@@ -119,8 +119,10 @@ class Vrf(
 
         """
         switch_uuid = switches.Switch.get_switch_uuid(self.client, switch)
-        ip_intf_uri = f"vrfs?fabrics={self.fabric_uuid}&ip_interfaces=true&\
-            include_referenced_objects=true"
+        ip_intf_uri = (
+            f"vrfs?fabrics={self.fabric_uuid}&ip_interfaces=true"
+            "&include_referenced_objects=true"
+        )
         request_ip_intf = self.client.get(ip_intf_uri)
         for intf in request_ip_intf.json()["result"][0]["ip_interfaces"]:
             if intf["name"] == name and intf["switch_uuid"] == switch_uuid:
@@ -214,7 +216,7 @@ class Vrf(
 
             vrf_request = self.client.post(
                 "vrfs",
-                data=json.dumps(data.dict(exclude_none=True)),
+                data=json.dumps(data.model_dump(exclude_none=True)),
             )
             if (
                 "should be unique for fabric" in vrf_request.json()["result"]
@@ -303,7 +305,7 @@ class Vrf(
                 data = models.VRFReapply(**kwargs)
                 vrf_request = self.client.put(
                     f"vrfs/{self.uuid}/switches/{switch['switch_uuid']}",
-                    data=json.dumps(data.dict()),
+                    data=json.dumps(data.model_dump()),
                 )
                 if vrf_request.status_code not in utils.response_ok:
                     raise exceptions.UpdateFailed(switch["name"])
@@ -338,6 +340,6 @@ class Vrf(
                             f"RD or RT configuration failed on {exc}")
         else:
             _message = ("A problem has been encountered while "
-                        "updating the VRF {self.name}")
+                        f"updating the VRF {self.name}")
 
         return _message, _status, _changed

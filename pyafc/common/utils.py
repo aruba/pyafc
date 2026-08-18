@@ -62,12 +62,11 @@ def extract_data(file: str) -> dict | bool:
         This section is mostly used for direct SDK based execution
 
     """
-    if not file.endswith(".yml") or not file.endswith(".yaml"):
+    if not (file.endswith(".yml") or file.endswith(".yaml")):
         return False
 
-    with Path.open(file) as stream:
+    with Path(file).open() as stream:
         data = yaml.safe_load(stream)
-        stream.close()
     return data
 
 
@@ -237,7 +236,7 @@ def populate_list_fabrics_switches(client: Client, values: dict) -> dict:
             raise exceptions.NoDeviceFound(msg)
 
     except exceptions.NoDeviceFound as exc:
-        raise exceptions.NoDeviceFound(exc)
+        raise exceptions.NoDeviceFound(exc) from exc
 
     return values
 
@@ -283,9 +282,9 @@ def populate_list_switches(
                     switches_list.extend(
                         consolidate_switches_list(client, values["switches"]),
                     )
-                except exceptions.NoDeviceFound:
+                except exceptions.NoDeviceFound as exc:
                     msg = "No devices found"
-                    raise exceptions.NoDeviceFound(msg)
+                    raise exceptions.NoDeviceFound(msg) from exc
         else:
             raise exceptions.NotGoodVar
 
@@ -319,7 +318,7 @@ def consolidate_switches_list(client, devices_list: list) -> list:
                 for sw in sw_list:
                     sw_uuid = _get_uuid(client, sw)
                     switches_uuids.append(sw_uuid)
-            except:
+            except netaddr.AddrFormatError:
                 sw_uuid = _get_uuid(client, switch)
                 switches_uuids.append(sw_uuid)
         else:

@@ -54,7 +54,7 @@ class Backup:
             uri_backup = "/backups"
             backup_request = self.client.post(
                 uri_backup,
-                data=json.dumps(data.dict(exclude_none=True)),
+                data=json.dumps(data.model_dump(exclude_none=True)),
             )
 
             if backup_request.status_code in utils.response_ok:
@@ -93,7 +93,7 @@ class Backup:
             uri_backup = "/backups/schedules"
             backup_request = self.client.post(
                 uri_backup,
-                data=json.dumps(data.dict(exclude_none=True)),
+                data=json.dumps(data.model_dump(exclude_none=True)),
             )
 
             if backup_request.status_code in utils.response_ok:

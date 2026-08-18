@@ -1,3 +1,81 @@
+# Unreleased
+
+### ⚠️ Breaking Changes
+
+#### TLS certificate verification is now enabled by default
+Previously `pyafc` connected to AFC with TLS certificate verification
+**disabled** (`verify=False` was hard-coded in both the synchronous and
+asynchronous HTTP clients). It now verifies the AFC certificate by default.
+
+- **Who is affected:** any code that connects to an AFC presenting a
+  self-signed or otherwise untrusted certificate (common in labs and on
+  appliances using the factory certificate).
+- **Symptom after upgrade:** the connection fails with a TLS certificate
+  verification error instead of succeeding silently.
+- **How to keep the previous behaviour:** pass `verify: False` in the data
+  dictionary. Only do this for trusted/lab environments.
+
+  ```python
+  from pyafc.afc import afc
+
+  afc_instance = afc.Afc(data={
+      "ip": "10.10.10.10",
+      "username": "admin",
+      "password": "password",
+      "verify": False,  # self-signed / lab certificate only
+  })
+  ```
+
+  The recommended long-term fix is to install a trusted certificate on AFC
+  so that verification can stay enabled.
+
+#### Migrated from Pydantic v1 to Pydantic v2
+`pyafc` now requires **Pydantic v2** (`pydantic>=2,<3`) instead of the
+previously pinned `pydantic==1.10.12`.
+
+- **Who is affected:** any environment that also depends on Pydantic v1, or
+  that imports `pyafc` models and uses the Pydantic v1 API directly.
+- **What changed internally:** validators were moved from `root_validator`
+  to `model_validator` (`mode="before"`/`mode="after"`), model serialization
+  now uses `model_dump()` instead of `.dict()`, and one optional field was
+  given an explicit `default=None`. The public behaviour of every model is
+  unchanged.
+- **Note on strictness:** Pydantic v2 no longer coerces `int` to `str`
+  automatically. Fields that accept stringified numbers are converted with a
+  `mode="before"` validator so existing input keeps working.
+- **How to migrate:** upgrade the environment to Pydantic v2. If your own
+  code calls `.dict()` on a `pyafc` model, switch to `.model_dump()`.
+
+### Added
+- `fabric`: new VLAN management on the fabric-wide VLAN table
+  (`fabrics/{fabric_uuid}/vlans`) through the `Vlan` mixin on the `Fabric`
+  class:
+  - `create_vlan` — create one or more VLANs (range syntax, e.g. `"10,20-30"`)
+    and assign them to one or more devices (by name or IP) or to a fabric
+    scope (`include_spine` / `exclude_spine`).
+  - `update_vlan` — assign VLAN(s) to additional devices and/or update their
+    attributes. Renaming an existing VLAN is AFC-version dependent and may be
+    a no-op on some releases; device assignment always applies.
+  - `delete_vlan` — delete VLAN(s) from the whole fabric, or unassign them
+    from specific devices only.
+  - `get_vlans` / `get_vlan` — read helpers.
+
+### Security Fixes
+- Made TLS certificate verification configurable via the `verify` key with a
+  secure default of `True`.
+- Replaced `sys.exit()` in the connection decorator with a proper
+  `AuthenticationIssue` exception.
+
+### Bug Fixes
+- `switches`: fixed the IP/UUID lookup logic (`get_switch_uuid`,
+  `consolidate_ip`) and the attribute-instantiation status check.
+- `vrf`: fixed attribute population, a malformed `get_ip_interface` URI and a
+  missing f-string in a log message.
+- `common`: repaired `extract_data` and the `afc_connected` decorator.
+- Added missing f-string prefixes in several error messages.
+
+---
+
 # v1.0.0
 
 ### Overview
